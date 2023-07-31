@@ -1,6 +1,7 @@
 # Compiler files
 cache/
 out/
+node_modules
 
 # Ignores development broadcast logs
 !/broadcast
@@ -12,3 +13,17 @@ docs/
 
 # Dotenv file
 .env
+.env.*
+venv
+.encryptedKey
+
+.gas-snapshot
+.vscode/
+.DS_Store
+src/.DS_Store
+
+package-lock.json
+tmp
+archives
+zz*
+notes
