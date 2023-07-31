@@ -1,9 +1,8 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {Script, console2} from "forge-std/Script.sol";
-
-import "src/ERC721Token.sol";
+import "forge-std/Script.sol";
+import {ERC721Token} from "src/ERC721Token.sol";
 
 contract CounterScript is Script {
     function setUp() public {}
@@ -12,5 +11,4 @@ contract CounterScript is Script {
         vm.broadcast();
         new ERC721Token("Dragons", "DRG");
     }
-
 }
