@@ -12,6 +12,7 @@ contract ERC20Token is ERC20 {
         _mint(msg.sender, 9000000000 * 10 ** 18);
     }
 }
+
 contract Counter {
     uint256 public number;
 

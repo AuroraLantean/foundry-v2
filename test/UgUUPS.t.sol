@@ -116,7 +116,7 @@ contract UgUUPSTest is Test {
         num1M = impl.num1();
         console.log("num1M:", num1M);
         assertEq(num1M, num1);
-        
+
         vm.expectRevert("Initializable: contract is already initialized");
         vm.prank(hacker);
         (ok,) = proxyAddr.call(abi.encodeWithSignature("initialize(uint256)", num1));
@@ -148,7 +148,7 @@ contract UgUUPSTest is Test {
         assertEq(implAddr, implemttnAddrM);
         //bytes32 proxySlot = vm.load(proxyAddr, EIP1967_SLOT);
         //assertEq(proxySlot, bytes32(uint256(uint160(implAddr))));
-        
+
         //-----------== Invoke upgradeTo()
         console.log("Invoke upgradeTo()");
         vm.prank(alice);
@@ -196,13 +196,14 @@ contract UgUUPSTest is Test {
 
         console.log("Upgrade is successful!");
     }
+
     function test_4upgradeToAndCallUUPS() external {
         console.log("----== test_4upgradeToAndCallUUPS");
         console.log("implAddr:       ", implAddr);
         implemttnAddrM = proxy.getImplementation();
         console.log("implemttnAddrM: ", implemttnAddrM);
         assertEq(implAddr, implemttnAddrM);
-        
+
         //-----------== Invoke upgradeToAndCallUUPS()
         console.log("Invoke upgradeToAndCallUUPS()");
         vm.prank(alice);

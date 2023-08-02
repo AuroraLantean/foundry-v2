@@ -14,28 +14,23 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20Burnable
 
 import "forge-std/console.sol";
 
-contract ERC20UToken is OwnableUpgradeable, ERC20Upgradeable, ERC20BurnableUpgradeable
-{
+contract ERC20UToken is OwnableUpgradeable, ERC20Upgradeable, ERC20BurnableUpgradeable {
     uint256 public num1;
 
-    function initialize(string memory name, string memory symbol)
-        public initializer
-    {
+    function initialize(string memory name, string memory symbol) public initializer {
         //console.log("ERC20Token initialize msg.sender:", msg.sender);
         __Ownable_init_unchained();
         __ERC20_init_unchained(name, symbol);
         num1 = 5;
         //_mint(msg.sender, initialSupply);
     }
+
     constructor() {
-      //to disable re-initialization. See Initializable.sol
-      _disableInitializers();//impl.getInitialized(): 255
+        //to disable re-initialization. See Initializable.sol
+        _disableInitializers(); //impl.getInitialized(): 255
     }
-    function mint(address user, uint256 amount)
-        public
-        onlyOwner
-        returns (bool)
-    {
+
+    function mint(address user, uint256 amount) public onlyOwner returns (bool) {
         _mint(user, amount);
         return true;
     }
@@ -44,19 +39,11 @@ contract ERC20UToken is OwnableUpgradeable, ERC20Upgradeable, ERC20BurnableUpgra
         _burn(account, amount);
     }
 
-    function transferInternal(
-        address from,
-        address to,
-        uint256 value
-    ) public {
+    function transferInternal(address from, address to, uint256 value) public {
         _transfer(from, to, value);
     }
 
-    function approveInternal(
-        address owner1,
-        address spender,
-        uint256 value
-    ) public {
+    function approveInternal(address owner1, address spender, uint256 value) public {
         _approve(owner1, spender, value);
     }
 }
@@ -69,6 +56,7 @@ contract ERC20UTokenV2 is ERC20UToken {
         num2 = _b;
     }
 }
+
 contract ERC20UTokenHack is ERC20UToken {
     //uint256 public num2;
     function attack(uint256 _b) external {
@@ -77,11 +65,10 @@ contract ERC20UTokenHack is ERC20UToken {
 }
 
 //------------------------------==
-contract ERC20UStaking is Initializable, OwnableUpgradeable, PausableUpgradeable
-{
+contract ERC20UStaking is Initializable, OwnableUpgradeable, PausableUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
     using AddressUpgradeable for address;
-    
+
     uint256 public num1;
     address public rwTokenAddr;
     mapping(address => uint256) public staked;
@@ -95,9 +82,10 @@ contract ERC20UStaking is Initializable, OwnableUpgradeable, PausableUpgradeable
         __Ownable_init();
         __Pausable_init();
     }
+
     constructor() {
-      //to disable re-initialization. See Initializable.sol
-      _disableInitializers();//impl.getInitialized(): 255
+        //to disable re-initialization. See Initializable.sol
+        _disableInitializers(); //impl.getInitialized(): 255
     }
 
     function stake(address tokenAddr, uint256 _amount) external whenNotPaused {
@@ -107,12 +95,13 @@ contract ERC20UStaking is Initializable, OwnableUpgradeable, PausableUpgradeable
         staked[msg.sender] += _amount;
     }
 }
+
 contract ERC20UStakingV2 is ERC20UStaking {
     using SafeERC20Upgradeable for IERC20Upgradeable;
     using AddressUpgradeable for address;
-    
+
     mapping(address => uint256) public rewardRates;
-    
+
     function setVersion(uint256 _num1) public onlyOwner {
         num1 = _num1;
     }
@@ -123,6 +112,7 @@ contract ERC20UStakingV2 is ERC20UStaking {
         staked[msg.sender] -= _amount;
     }
 }
+
 contract ERC20UStakingHack is ERC20UStaking {
     //uint256 public num2;
     function attack(uint256 _b) external {

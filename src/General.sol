@@ -21,14 +21,15 @@ contract General {
     //rotaryState rState;//enum
 
     mapping(address => Item[]) public itemsByOwner;
-    
+
     function addItem(uint256 _num) public {
         arr.push(_num);
     }
+
     function getItem(uint256 index) public view returns (uint256) {
         return arr[index];
     }
-    
+
     function addMapItem(uint256 _num) public {
         itemsByOwner[msg.sender].push(Item(_num, address(0)));
         cindex++;

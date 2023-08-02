@@ -12,5 +12,4 @@ contract CounterScript is Script {
         vm.broadcast();
         new ERC721Token("Dragons", "DRG");
     }
-
 }

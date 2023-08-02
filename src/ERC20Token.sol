@@ -32,6 +32,15 @@ contract ERC20Token is Ownable, ERC20, ERC20Burnable {
         return true;
     }
 }
+//USDT, USDC use 6 dp !!! But DAI has 18!!
+
+contract ERC20DP6 is ERC20Token {
+    constructor(string memory name, string memory symbol) ERC20Token(name, symbol) {}
+
+    function decimals() public pure override returns (uint8) {
+        return 6;
+    }
+}
 
 interface IERC20Receiver {
     /**

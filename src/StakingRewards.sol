@@ -4,17 +4,15 @@ pragma solidity ^0.8.20;
 import "forge-std/console.sol";
 
 import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-//import "@rari-capital/solmate/src/tokens/ERC20.sol";
+import "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 /**
  * a stripped down version of Synthetix StakingRewards.sol
  * https://github.com/Synthetixio/synthetix/blob/develop/contracts/StakingRewards.sol
  */
-contract StakingRewards {
+contract StakingRewards is Ownable {
     IERC20 public immutable stakingToken;
     IERC20 public immutable rewardsToken;
-
-    address public owner;
 
     // Duration of rewards to be paid out (in seconds)
     uint256 public duration;
@@ -37,14 +35,8 @@ contract StakingRewards {
     mapping(address => uint256) public staked;
 
     constructor(address _stakingToken, address _rewardToken) {
-        owner = msg.sender;
         stakingToken = IERC20(_stakingToken);
         rewardsToken = IERC20(_rewardToken);
-    }
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "not authorized");
-        _;
     }
 
     // to track rewardPerToken and rewardPerTokenUser

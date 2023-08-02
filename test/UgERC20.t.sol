@@ -80,7 +80,7 @@ contract UgERC20Test is Test {
         console.log("proxyStakingAddr:", proxyStakingAddr);
         //MUST instantiate the contract at the proxy addr
         erc20UStaking = ERC20UStaking(proxyStakingAddr);
-        
+
         amount1 = 1000;
         erc20U.mint(alice, amount1);
         erc20U.mint(bob, amount1);
@@ -103,7 +103,6 @@ contract UgERC20Test is Test {
         console.log("num1M:", num1M);
         assertEq(num1M, 5);
 
-
         console.log("values from erc20UStaking");
         ownerM = erc20UStaking.owner();
         console.log("ownerM:", ownerM);
@@ -125,7 +124,7 @@ contract UgERC20Test is Test {
     //tests the upgradeability mechanism of the contracts
     function test_3_Upgrade() external {
         console.log("----== test_3_Upgrade");
-//ERC20UStakingHack erc20UStakingHack;
+        //ERC20UStakingHack erc20UStakingHack;
         vm.startPrank(hacker);
         erc20UStakingHack = new ERC20UStakingHack();
         erc20UStakingHackAddr = address(erc20UStakingHack);
@@ -140,7 +139,7 @@ contract UgERC20Test is Test {
         erc20UStakingAddrM = proxyStaking.getImplementation();
         console.log("erc20UStakingAddrM: ", erc20UStakingAddrM);
         assertEq(erc20UStakingAddr, erc20UStakingAddrM);
-        
+
         //erc20UStaking  erc20U, proxyERC20Addr
         stakedAmt = 1000;
         vm.prank(bob);
@@ -148,8 +147,7 @@ contract UgERC20Test is Test {
         stakedBobM = erc20UStaking.staked(bob);
         console.log("stakedBobM:", stakedBobM);
         assertEq(stakedBobM, stakedAmt);
-        
-        
+
         //-----------== Invoke upgradeTo()
         console.log("Invoke upgradeTo()");
         vm.prank(alice);
@@ -178,29 +176,28 @@ contract UgERC20Test is Test {
         num1M = erc20UStakingV2.num1();
         console.log("num1M:", num1M);
         assertEq(num1M, num1);
-        
+
         //erc20UStakingV2  erc20U, proxyERC20Addr
         stakedBobM = erc20UStakingV2.staked(bob);
         console.log("stakedBobM:", stakedBobM);
         assertEq(stakedBobM, stakedAmt);
         stakedBobB4 = stakedBobM;
-        
+
         withdrawnAmt = 1000;
         vm.prank(bob);
         erc20UStakingV2.withdraw(proxyERC20Addr, withdrawnAmt);
         stakedBobM = erc20UStakingV2.staked(bob);
         console.log("stakedBobM:", stakedBobM);
-        assertEq(stakedBobM, stakedBobB4-withdrawnAmt);
+        assertEq(stakedBobM, stakedBobB4 - withdrawnAmt);
 
-        
         balcBobM = erc20U.balanceOf(bob);
         console.log("balcBobM:", balcBobM);
         assertEq(balcBobM, amount1);
     }
-/**
-        erc20UV2 = ERC20UTokenV2(proxyERC20Addr);
-        balcBobM = erc20UV2.balanceOf(bob);
-        console.log("balcBobM:", balcBobM);
-        assertEq(balcBobM, amount1);
- */
+    /**
+     * erc20UV2 = ERC20UTokenV2(proxyERC20Addr);
+     *     balcBobM = erc20UV2.balanceOf(bob);
+     *     console.log("balcBobM:", balcBobM);
+     *     assertEq(balcBobM, amount1);
+     */
 }

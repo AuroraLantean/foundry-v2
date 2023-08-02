@@ -48,9 +48,10 @@ contract Implettn is Initializable, UUPSUpgradeable, OwnableUpgradeable {
     uint256 public num1;
 
     constructor() {
-      //to disable re-initialization. See Initializable.sol
-      _disableInitializers();//impl.getInitialized(): 255
+        //to disable re-initialization. See Initializable.sol
+        _disableInitializers(); //impl.getInitialized(): 255
     }
+
     function initialize(uint256 _num) external initializer {
         //called by Proxy via delegatecall so that the variables here are stored in the proxy storage
         //console.log("Implettn/initialize()", msg.sender, _num);
@@ -58,10 +59,11 @@ contract Implettn is Initializable, UUPSUpgradeable, OwnableUpgradeable {
         __Ownable_init();
         num1 = _num;
     }
-    
+
     function inc(uint256 _b) external {
         num1 += _b;
     }
+
     function setNum1(uint256 _b) external {
         num1 = _b;
     }
@@ -82,10 +84,12 @@ contract ImplettnV2 is Implettn {
         console.log("dcr");
         num1 -= _b;
     }
+
     function setNum2(uint256 _b) external {
         num2 = _b;
     }
 }
+
 contract ImplettnHack is Implettn {
     //uint256 public num2;
 

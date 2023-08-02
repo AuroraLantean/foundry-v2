@@ -24,7 +24,7 @@ contract CounterV1 {
     }
 }
 
-contract CounterV2 is CounterV1{
+contract CounterV2 is CounterV1 {
     //MUST have the same slot data as the proxy contract
     uint256 public owner;
     mapping(address => uint256) shareHolder; //New variables!
