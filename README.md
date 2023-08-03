@@ -31,23 +31,25 @@ To build: `make build`
 
 To run test: `forge test --match-path test/Counter.t.sol -vv`
 
-## Add Environment Variables
+## Environment Variables
 
-If you see errors like `a value is required for '--fork-url <URL>' but none was supplied`, then you need to implement the .env file and run `source .env`
+Implement the .env file and run `source .env` before you run any package.json script that requires environment variables.
 
-Make `.env` file from `.env.example`: `cp .env.example .env`. Then fill out the following in that .env file:
+Make `.env` file from `.env.example`.
+
+Then fill out the following in that .env file:
 
 ```
 MAINNET_RPC_URL=
 SEPOLIA_RPC_URL=
-POLYGON_RPC_URL=
-OPTIMISM_RPC_URL=
-ARBITRUM_RPC_URL=
+GOERLI_RPC_URL=
 ETHERSCAN_API_KEY=
 SIGNER1=
+PRIVATE_KEY=
+PoolAddressesProviderAaveV3Sepolia=
 ```
 
-Run each test file: `pnpm run <script_name>`
+Run each package.json script via `npm run <script_name>` or `pnpm run <script_name>`
 
 ## Documentation
 
