@@ -63,7 +63,7 @@ contract UniswapSingleSwap {
             tokenOut: WETH,
             fee: poolFee,
             recipient: address(this),
-            deadline: block.timestamp,
+            deadline: block.timestamp, // + 60*3 for 3 minutes
             amountIn: amountIn,
             amountOutMinimum: 0,
             sqrtPriceLimitX96: 0

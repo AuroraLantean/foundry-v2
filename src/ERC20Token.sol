@@ -127,7 +127,7 @@ contract ERC20Receiver {
 
     function executeTxn(address _ctrt, uint256 _value, bytes calldata _data) public {
         //console.log("executeTxn()...", _data, msg.value);
-        (bool success, bytes memory _databk) = _ctrt.call{value: _value}(_data);
+        (bool success, /*bytes memory _databk*/ ) = _ctrt.call{value: _value}(_data);
         //console.logBytes(_databk);
         require(success, "tx failed");
     }

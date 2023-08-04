@@ -40,7 +40,7 @@ contract CounterScript is Script {
         if (choice == 0) {
             new ERC20Token("GoldCoin", "GOLC");
         } else if (choice == 1) {
-            new ERC721Token("Dragon1", "DRAG1");
+            new ERC721Token("Dragon", "DRAG");
         } else if (choice == 2) {}
         vm.stopBroadcast();
     }
