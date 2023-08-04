@@ -4,9 +4,10 @@ out/
 node_modules
 
 # Ignores development broadcast logs
-!/broadcast
+#!/broadcast
 /broadcast/*/31337/
 /broadcast/**/dry-run/
+broadcast
 
 # Docs
 docs/

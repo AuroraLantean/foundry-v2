@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol"; //safeTransfer, safeTransferFrom, safeApprove, safeIncreaseAllowance, safeDecreaseAllowance
 import "@openzeppelin/contracts/security/Pausable.sol";
 
-import "forge-std/console.sol";
+//import "forge-std/console.sol";
 
 contract ERC20Token is Ownable, ERC20, ERC20Burnable {
     //constructor() ERC20("GoldCoin", "GLDC") {}
@@ -68,7 +68,7 @@ contract ERC20Receiver {
      * The selector can be obtained in Solidity with `IERC20Receiver.tokenReceived.selector`.
      */
     function tokenReceived(address from, uint256 amount, bytes calldata data) external returns (bytes4) {
-        console.log("tokenReceived");
+        //console.log("tokenReceived");
         emit TokenReceived(from, amount, data);
         return _ERC20_RECEIVED;
     }
@@ -128,7 +128,7 @@ contract ERC20Receiver {
     function executeTxn(address _ctrt, uint256 _value, bytes calldata _data) public {
         //console.log("executeTxn()...", _data, msg.value);
         (bool success, bytes memory _databk) = _ctrt.call{value: _value}(_data);
-        console.logBytes(_databk);
+        //console.logBytes(_databk);
         require(success, "tx failed");
     }
 

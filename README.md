@@ -23,12 +23,18 @@ Foundry consists of:
 
 ## Installation
 
-To install: `make install`
+Install Foundry according to doc: https://book.getfoundry.sh/getting-started/installation
+
+```
+curl -L https://foundry.paradigm.xyz | bash
+```
+
+To install dependencies used in this repo: `make install`
 
 To clean then install: `make all`
 
 To build: `make build`
-
+https://book.getfoundry.sh/getting-started/installation
 To run test: `forge test --match-path test/Counter.t.sol -vv`
 
 ## Environment Variables

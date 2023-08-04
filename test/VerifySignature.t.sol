@@ -12,8 +12,7 @@ contract VerifySignatureTest is Test {
     uint256 numM;
     uint256 inputValue = 13;
     uint256 etherValue;
-    address payable addr1;
-    address addr2;
+    address fox1;
     address calleeAddr;
     address callerAddr;
     address senderM;
@@ -28,6 +27,7 @@ contract VerifySignatureTest is Test {
         deal(bob, 1000 ether);
         vSig = new VerifySignature();
         calleeAddr = address(vSig);
+        fox1 = vm.rememberKey(vm.envUint("PRIVATE_KEY"));
     }
 
     function test1() public {
@@ -53,8 +53,7 @@ contract VerifySignatureTest is Test {
         console.log("RecoveredSigner:", recoveredSigner);
         console.log("Confirm the above signer");
 
-        //PASTE YOUR SIGNER ADDRESS HERE
-        address signer = address(0x12345678);
+        address signer = fox1;
         bool isVerified = vSig.verifySigner(signer, to, amount, mesg, nonce, sig);
         console.log("isVerified:", isVerified);
         //console.log("successfully verified signer");
