@@ -71,9 +71,11 @@ contract Bit {
         boolx = ((store.data >> index) & uint256(1)) == 1;
     }
 
+    //From Uniswap BitMath.sol
     // Find most significant bit using binary search
     // decimal 4 is 0x0100 in binary format. So the "1" is counted from the right side starting from 0, 1, 2
     function mostSignificantBit(uint256 x) external pure returns (uint256 msb) {
+        require(x > 0);
         // x >= 2 ** 128
         if (x >= 0x100000000000000000000000000000000) {
             x >>= 128;
@@ -111,5 +113,48 @@ contract Bit {
         }
         // x >= 2 ** 1
         if (x >= 0x2) msb += 1;
+    }
+    
+    //From Uniswap BitMath.sol
+    function leastSignificantBit(uint256 x) internal pure returns (uint8 r) {
+        require(x > 0);
+
+        r = 255;
+        if (x & type(uint128).max > 0) {
+            r -= 128;
+        } else {
+            x >>= 128;
+        }
+        if (x & type(uint64).max > 0) {
+            r -= 64;
+        } else {
+            x >>= 64;
+        }
+        if (x & type(uint32).max > 0) {
+            r -= 32;
+        } else {
+            x >>= 32;
+        }
+        if (x & type(uint16).max > 0) {
+            r -= 16;
+        } else {
+            x >>= 16;
+        }
+        if (x & type(uint8).max > 0) {
+            r -= 8;
+        } else {
+            x >>= 8;
+        }
+        if (x & 0xf > 0) {
+            r -= 4;
+        } else {
+            x >>= 4;
+        }
+        if (x & 0x3 > 0) {
+            r -= 2;
+        } else {
+            x >>= 2;
+        }
+        if (x & 0x1 > 0) r -= 1;
     }
 }

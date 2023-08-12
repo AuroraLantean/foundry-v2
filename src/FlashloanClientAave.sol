@@ -94,7 +94,7 @@ contract FlashloanClientAave is FlashLoanSimpleReceiverBase {
         POOL.flashLoanSimple(receiverAddress, _token, _amount, params, referralCode);
     }
 
-    function approveUSDC(uint256 _amount) external returns (bool) {
+    function approveUSDC(uint256 _amount) external onlyOwner returns (bool) {
         return usdc.approve(address(dex), _amount);
     }
 
@@ -102,7 +102,7 @@ contract FlashloanClientAave is FlashLoanSimpleReceiverBase {
         return usdc.allowance(address(this), address(dex));
     }
 
-    function approveDAI(uint256 _amount) external returns (bool) {
+    function approveDAI(uint256 _amount) external onlyOwner returns (bool) {
         return dai.approve(address(dex), _amount);
     }
 

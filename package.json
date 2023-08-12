@@ -5,6 +5,7 @@
   "author": "",
   "license": "MIT",
   "scripts": {
+    "checkmakefile": "cat -e -t -v Makefile",
     "install": "make install",
     "clean": "make clean",
     "remove": "make remove",
