@@ -49,13 +49,23 @@ Then fill out the following in that .env file:
 MAINNET_RPC_URL=
 SEPOLIA_RPC_URL=
 GOERLI_RPC_URL=
+ANVIL_RPC=http://127.0.0.1:8545
 ETHERSCAN_API_KEY=
-SIGNER1=
-PRIVATE_KEY=
+
+# Live Network Contracts
+TOKEN_ADDR=
+NFT_ADDR=
 PoolAddressesProviderAaveV3Sepolia=
+
+# Deploy Properties
+MNEMONIC=
+SIGNER=
+PRIVATE_KEY=
+ANVIL_SIGNER=
+ANVIL_PRIVATE_KEY=
 ```
 
-Run each package.json script via `npm run <script_name>` or `pnpm run <script_name>`
+Run each package.json script via `bun run <script_name>`
 
 ## Documentation
 
@@ -75,28 +85,31 @@ $ forge build
 $ forge test
 ```
 
-### Format
-
-```shell
-$ forge fmt
-```
-
 ### Gas Snapshots
 
 ```shell
 $ forge snapshot
 ```
 
-### Anvil
+### Deploy Locally to Anvil
 
 ```shell
-$ anvil
+$ bun run anvil
+$ bun run deployAnvil
 ```
 
-### Deploy
+### Deploy Remotely
 
 ```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+$ bun run deploySepolia
+```
+
+### Copy the contract ABIs and deployed contract addresses to your frontend repository
+
+[Note] Edit to makeAbi.ts to set where to copy the abi from, and where to paste it to( your frontend repository)
+
+```shell
+$ bun run makeAbi
 ```
 
 ### Cast

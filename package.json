@@ -10,11 +10,11 @@
     "clean": "make clean",
     "remove": "make remove",
     "reinstall": "make all",
+    "format": "forge fmt",
     "compile": "forge compile",
     "build": "forge build",
     "rebuild": "make clean && make build",
     "snapshot": "forge snapshot",
-    "format": "make format",
     "lint": "make lint",
     "update": "forge update",
     "all": "make all",
@@ -90,7 +90,11 @@
     "anvil": "anvil -m 'test test test test test test test test test test test junk'",
     "anvil2": "anvil -m $MNEMONIC",
     "deployAnvil": "forge script script/LocalDeploymt.s.sol:AnvilDeploymtScript --fork-url $ANVIL_RPC --broadcast -vvvv",
+    "makeAbi": "bun run makeAbi.ts",
     "getCount": "cast call $CONTRACT_ADDRESS 'getCount()(uint256)'",
     "setCount": "cast send $CONTRACT_ADDRESS 'setCount(uint256)' 327 --private-key $PRIVATE_KEY"
+  },
+  "devDependencies": {
+    "bun-types": "^1.0.6"
   }
 }

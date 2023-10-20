@@ -20,7 +20,7 @@ import "src/ERC20Token.sol";
 import "src/ERC721Token.sol";
 import "src/ERC721Sales.sol";
 
-contract LiveDeploymtScript is Script {
+contract RemoteDeploymtScript is Script {
     uint256 public choice;
     string public url;
     uint256 public balcEthB4;
@@ -58,7 +58,7 @@ contract LiveDeploymtScript is Script {
             ERC20Token goldtoken = new ERC20Token("GoldCoin", "GOLC");
             console.log("GoldCoin addr:", address(goldtoken));
             balcTokB4 = goldtoken.balanceOf(alice);
-            console.log("alice GoldCoin balc:", balcTokB4);
+            console.log("alice GoldCoin balc:", balcTokB4, balcTokB4 / 1e18);
         } else if (choice == 2) {
             ERC721Token dragons = new ERC721Token("DragonsNFT", "DRAG");
             balcTokB4 = dragons.balanceOf(alice);
@@ -67,7 +67,7 @@ contract LiveDeploymtScript is Script {
             ERC20DP6 usdt = new ERC20DP6("TetherUSD", "USDT");
             console.log("USDT addr:", address(usdt));
             balcTokB4 = usdt.balanceOf(alice);
-            console.log("alice USDT balc:", balcTokB4);
+            console.log("alice USDT balc:", balcTokB4, balcTokB4 / 1e6);
         } else if (choice == 4) {
             address tokenAddr = vm.envAddress("TOKEN_ADDR");
             console.log("TOKEN_ADDR:", tokenAddr);

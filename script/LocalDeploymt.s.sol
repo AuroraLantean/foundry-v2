@@ -22,6 +22,8 @@ import "src/ERC721Sales.sol";
 
 contract AnvilDeploymtScript is Script {
     address public tis = address(this);
+    address public usdtAddr;
+    address public dragonsAddr;
     uint256 public choice;
     string public url;
     uint256 public balcEthB4;
@@ -39,13 +41,6 @@ contract AnvilDeploymtScript is Script {
 
     //default function to run in scripts
     function run() public {
-        url = vm.rpcUrl("sepolia"); //get the RPC_URL from foundry.toml: [rpc_endpoints]
-        console.log("url:", url);
-        /* url = vm.rpcUrl("optimism");
-        console.log("url:", url);
-        url = vm.rpcUrl("arbitrum");
-        console.log("url:", url);
-        */
         uint256 privateKey = vm.envUint("ANVIL_PRIVATE_KEY");
         address alice = vm.rememberKey(vm.envUint("ANVIL_PRIVATE_KEY"));
         //vm.envAddress("ANVIL_SIGNER");
@@ -60,40 +55,48 @@ contract AnvilDeploymtScript is Script {
             ERC20Token goldtoken = new ERC20Token("GoldCoin", "GOLC");
             console.log("GoldCoin addr:", address(goldtoken));
             balcTokB4 = goldtoken.balanceOf(alice);
-            console.log("alice GoldCoin balc:", balcTokB4);
+            console.log("alice GoldCoin balc:", balcTokB4, balcTokB4 / 1e18);
         } else if (choice == 2) {
             ERC721Token dragons = new ERC721Token("DragonsNFT", "DRAG");
+            dragonsAddr = address(dragons);
             balcTokB4 = dragons.balanceOf(alice);
             console.log("alice NFT balc:", balcTokB4);
         } else if (choice == 3) {
             ERC20DP6 usdt = new ERC20DP6("TetherUSD", "USDT");
-            console.log("USDT addr:", address(usdt));
+            usdtAddr = address(usdt);
+            console.log("USDT addr:", usdtAddr);
             balcTokB4 = usdt.balanceOf(alice);
-            console.log("alice USDT balc:", balcTokB4);
+            console.log("alice USDT balc:", balcTokB4, balcTokB4 / 1e6);
         } else if (choice == 4) {
             balcTokB4 = alice.balance;
             console.log("alice ETH balc:", balcTokB4, balcTokB4 / 1e18);
 
             ERC20DP6 usdt = new ERC20DP6("TetherUSD", "USDT");
-            console.log("USDT addr:", address(usdt));
+            usdtAddr = address(usdt);
+            console.log("USDT addr:", usdtAddr);
             balcTokB4 = usdt.balanceOf(alice);
             console.log("alice USDT balc:", balcTokB4, balcTokB4 / 1e6);
 
             ERC721Token dragons = new ERC721Token("DragonsNFT", "DRAG");
-            console.log("DragonsNFT addr:", address(dragons));
+            dragonsAddr = address(dragons);
+            console.log("DragonsNFT addr:", dragonsAddr);
             balcTokB4 = dragons.balanceOf(alice);
             console.log("alice NFT balc:", balcTokB4);
 
             uint256 priceInWeiEth = 1e18;
             uint256 priceInWeiToken = 100e6;
             //ERC721Sales _sales =
-            ERC721Sales sales = new ERC721Sales(address(usdt), address(dragons), priceInWeiEth, priceInWeiToken);
+            ERC721Sales sales = new ERC721Sales(usdtAddr, dragonsAddr, priceInWeiEth, priceInWeiToken);
             address salesAddr = address(sales);
             console.log("Sales addr:", salesAddr);
 
             dragons.safeTransferFromBatch(alice, salesAddr, 0, 9);
             nftBalc = dragons.balanceOf(salesAddr);
             console.log("Sales nftBalc:", nftBalc);
+
+            console.log("USDT_ADDR=", usdtAddr);
+            console.log("DRAGONS_ADDR=", dragonsAddr);
+            console.log("SALES_ADDR=", salesAddr);
         }
         vm.stopBroadcast();
     }
