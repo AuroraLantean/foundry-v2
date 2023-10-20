@@ -11,14 +11,18 @@ import "forge-std/Script.sol";
  * #3 Broadcasting - Optional. If the --broadcast flag is provided and the previous phases have succeeded, it will broadcast the transactions collected at step 1. and simulated at step 2.
  *
  * #4 Verification - Optional. If the --verify flag is provided, there's an API key, and the previous phases have succeeded it will attempt to verify the contract. (eg. etherscan).
+ *
+ * # Supported RPC Methods
+ *   https://book.getfoundry.sh/reference/anvil/
  */
 
 import "src/ERC20Token.sol";
 import "src/ERC721Token.sol";
+import "src/ERC721Sales.sol";
 
 contract CounterScript is Script {
-    uint256 choice = 0;
-    string url;
+    uint256 public choice = 0;
+    string public url;
 
     /**
      * For Arbitrum, convert some ETH into Arbitrum ETH:
@@ -40,8 +44,16 @@ contract CounterScript is Script {
         if (choice == 0) {
             new ERC20Token("GoldCoin", "GOLC");
         } else if (choice == 1) {
-            new ERC721Token("Dragon", "DRAG");
-        } else if (choice == 2) {}
+            new ERC721Token("DragonsNFT", "DRAG");
+        } else if (choice == 2) {
+            new ERC20DP6("TetherUSD", "USDT");
+        } else if (choice == 2) {
+            address usdtAddr = address(0x123);
+            address dragonsNFT = address(0x123);
+            uint256 priceInWeiEth = 1e18;
+            uint256 priceInWeiToken = 100e6;
+            new ERC721Sales(usdtAddr, dragonsNFT, priceInWeiEth, priceInWeiToken);
+        }
         vm.stopBroadcast();
     }
 }

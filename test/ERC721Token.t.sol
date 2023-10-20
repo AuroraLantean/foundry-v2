@@ -7,18 +7,18 @@ import "src/ERC721Token.sol";
 contract ERC721TokenTest is Test {
     ERC721Token public erc721;
     ERC721Receiver public erc721receiver;
-    address erc721Addr;
-    address erc721receiverAddr;
-    address ctrtOwner;
-    address nftOwner;
-    address alice = address(1);
-    address bob = address(2);
-    address charlie = address(3);
-    uint256 nftBalc;
-    uint256 nftId;
-    uint256 nftIdMin = 10;
-    uint256 nftIdMax = 19;
-    bytes4 b4;
+    address public erc721Addr;
+    address public erc721receiverAddr;
+    address public ctrtOwner;
+    address public nftOwner;
+    address public alice = address(1);
+    address public bob = address(2);
+    address public charlie = address(3);
+    uint256 public nftBalc;
+    uint256 public nftId;
+    uint256 public nftIdMin = 10;
+    uint256 public nftIdMax = 19;
+    bytes4 public b4;
 
     function setUp() public {
         vm.prank(alice);

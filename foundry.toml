@@ -11,6 +11,7 @@ fuzz_runs = 1_000
 #eth-rpc-url = "https://mainnet.infura.io"
 
 [rpc_endpoints]
+sepolia = "${SEPOLIA_RPC_URL}"
 goerli = "${GOERLI_RPC_URL}"
 optimism = "${OPTIMISM_GOERLI}"
 arbitrum = "${ARBITRUM_GOERLI}"

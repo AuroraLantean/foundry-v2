@@ -7,16 +7,16 @@ import "src/ERC20Token.sol";
 contract ERC20TokenTest is Test {
     ERC20Token public erc20;
     ERC20Receiver public erc20receiver;
-    address erc20Addr;
-    address erc20receiverAddr;
-    address ctrtOwner;
-    address tokenOwner;
-    address alice = address(1);
-    address bob = address(2);
-    address charlie = address(3);
-    uint256 balc;
-    uint256 tokenAmount;
-    bytes4 b4;
+    address public erc20Addr;
+    address public erc20receiverAddr;
+    address public ctrtOwner;
+    address public tokenOwner;
+    address public alice = address(1);
+    address public bob = address(2);
+    address public charlie = address(3);
+    uint256 public balc;
+    uint256 public tokenAmount;
+    bytes4 public b4;
 
     function setUp() public {
         vm.startPrank(alice);

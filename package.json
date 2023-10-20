@@ -21,6 +21,7 @@
     "test": "forge test -vv",
     "erc20": "forge test -vvv --match-path test/ERC20Token.t.sol",
     "erc721": "forge test -vvv --match-path test/ERC721Token.t.sol",
+    "erc721sales": "forge test -vvv --match-path test/ERC721Sales.t.sol",
     "erc1155": "forge test -vvv --match-path test/ERC1155.t.sol",
     "counter": "forge test --match-path test/Counter.t.sol -vv",
     "error": "forge test --match-path test/Error.t.sol -vvv",
@@ -82,8 +83,10 @@
     "uniswapSingleSwap": "forge test --fork-url $GOERLI_RPC_URL --match-path test/UniswapSingleSwap.t.sol -vvv",
     "flashloanClientAave": "forge test --fork-url $SEPOLIA_RPC_URL --match-path test/FlashloanAave.t.sol -vvv",
     "fLiquidityClientAave": "forge test --fork-url $SEPOLIA_RPC_URL --match-path test/fLiquidityClientAave.t.sol -vvv",
+    "deploySepolia": "forge script script/Counter.s.sol:CounterScript --fork-url $SEPOLIA_RPC_URL --broadcast --verify -vvvv",
     "deployArbitrum": "forge script script/Counter.s.sol:CounterScript --fork-url $ARBITRUM_GOERLI --broadcast --verify -vvvv",
     "deployOptimism": "forge script script/Counter.s.sol:CounterScript --fork-url $OPTIMISM_GOERLI --broadcast --verify -vvvv",
+    "anvil": "anvil -m 'test test test test test test test test test test test junk'",
     "deployAnvil": "forge script script/Counter.s.sol:CounterScript --fork-url $ANVIL_RPC --broadcast -vvvv",
     "getCount": "cast call $CONTRACT_ADDRESS 'getCount()(uint256)'",
     "setCount": "cast send $CONTRACT_ADDRESS 'setCount(uint256)' 327 --private-key $PRIVATE_KEY"
