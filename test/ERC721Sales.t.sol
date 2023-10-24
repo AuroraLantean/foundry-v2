@@ -10,7 +10,7 @@ contract ERC721SalesTest is Test, ERC721Holder {
     address public zero = address(0);
     address public alice = address(1);
     address public bob = address(2);
-    address public hacker = address(6);
+    address public eve = address(5);
     address public tis = address(this);
     ERC721Sales public sales;
     ERC721Token public dragons;

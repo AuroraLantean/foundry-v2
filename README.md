@@ -61,8 +61,8 @@ PoolAddressesProviderAaveV3Sepolia=
 MNEMONIC=
 SIGNER=
 PRIVATE_KEY=
-ANVIL_SIGNER=
-ANVIL_PRIVATE_KEY=
+ANVIL4=
+ANVIL4_PRIVATE_KEY=
 ```
 
 Run each package.json script via `bun run <script_name>`

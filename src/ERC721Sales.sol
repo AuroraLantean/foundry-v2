@@ -1,6 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+// import "xyz";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol"; //includes IERC20
 //totalSupply(), tokenOfOwnerByIndex(address owner, uint256 index), tokenByIndex(uint256 index)
@@ -13,6 +14,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol"; 
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol"; // includes IERC721
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol"; //includes IERC721Receiver
 
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "forge-std/console.sol";
 
 //------------------------------==
@@ -21,7 +23,7 @@ interface IERC721Full is IERC165, IERC721Metadata, IERC721Enumerable {
 } // use this instead of the full contract because we only need a few functions like transfer and transferFrom, etc...
 //----------------------==
 
-contract ERC721Sales is Ownable, ERC721Holder {
+contract ERC721Sales is Ownable, ERC721Holder, ReentrancyGuard {
     using SafeERC20 for IERC20;
     using Address for address;
 
@@ -81,10 +83,11 @@ contract ERC721Sales is Ownable, ERC721Holder {
         emit BuyNFTViaERC20(msg.sender, _tokenId, priceInWeiToken, address(this).balance);
     }
 
-    function withdrawETH(address payable _to, uint256 _amount) external onlyOwner {
+    function withdrawETH(address payable _to, uint256 _amount) external onlyOwner nonReentrant {
         require(_to != address(0) && _to != address(this), "to address invalid");
-        require(_amount > 0 && _amount <= address(this).balance, "amount invalid");
-        payable(address(_to)).transfer(_amount);
+        require(_amount > 0, "amount invalid");
+        Address.sendValue(_to, _amount); //check this ctrt ETH balance >= amount
+        //payable(address(_to)).transfer(_amount);
         emit WithdrawETH(_to, _amount, address(this).balance);
     }
 
