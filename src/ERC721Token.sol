@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
+//TODO: https://github.com/OpenZeppelin/openzeppelin-contracts/releases/tag/v5.0.0
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
@@ -29,6 +30,14 @@ contract ERC721Token is Ownable, ERC721Burnable, ERC721Enumerable, ERC721URIStor
                 continue;
             }
             _safeMint(to, tokenId);
+        }
+    }
+
+    function safeApproveBatch(address to, uint256 minTokenId, uint256 maxTokenId) public onlyOwner {
+        for (uint256 tokenId = minTokenId; tokenId <= maxTokenId; tokenId++) {
+            if (exists(tokenId)) {
+                approve(to, tokenId);
+            }
         }
     }
 

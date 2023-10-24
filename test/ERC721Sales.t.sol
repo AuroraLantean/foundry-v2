@@ -7,7 +7,7 @@ import "src/ERC721Token.sol";
 import "src/ERC721Sales.sol";
 
 contract ERC721SalesTest is Test, ERC721Holder {
-    //address zero = address(0);
+    address public zero = address(0);
     address public alice = address(1);
     address public bob = address(2);
     address public hacker = address(6);
@@ -18,102 +18,117 @@ contract ERC721SalesTest is Test, ERC721Holder {
     ERC20Token public token0;
     address public owner;
     address public salesAddr;
-    uint256 public balcBobB4;
-    uint256 public balcBobAf;
-    uint256 public balcEthB4;
-    uint256 public balcEthAf;
-    uint256 public balcTokB4;
-    uint256 public balcTokAf;
-    uint256 public balcNftB4;
-    uint256 public balcNftAf;
-    uint256 public nftBalc;
+    address public tokenAddr;
+    uint256 public aGenBf;
+    uint256 public aGenAf;
+    uint256 public aNftBf;
+    uint256 public aNftAf;
+    uint256 public cGenBf;
+    uint256 public cGenAf;
+    uint256 public cNftBf;
+    uint256 public cNftAf;
     uint256 public amount = 1000;
-    uint256 public priceInWeiEth = 1e18;
-    uint256 public priceInWeiToken = 100e6;
+    uint256 public priceInWeiEth = 1e15;
+    uint256 public tokenDp = 1e6;
+    uint256 public priceInWeiToken = 100 * tokenDp;
     //uint256 public feeAmount;
     //IWETH_dup public weth;
 
     receive() external payable {
-        console.log("receive", msg.sender, msg.value);
+        console.log("ETH received from:", msg.sender);
+        console.log("ETH received in Szabo:", msg.value / 1e12);
     }
 
     function setUp() external {
         console.log("---------== Setup()");
-        deal(alice, 1000 ether); //hoax(addr,uint): deal + prank
-        deal(bob, 1000 ether);
+        deal(alice, 1 ether); //hoax(addr,uint): deal + prank
+        deal(bob, 1 ether);
 
         //USDT, USDC use 6 dp !!! But DAI has 18!!
         usdt = new ERC20DP6("TetherUSD", "USDT");
         dragons = new ERC721Token("DragonsNFT", "DRAG");
-        usdt.mint(alice, amount);
-        usdt.mint(bob, amount);
-        //balcAliceB4 = usdt.balanceOf(alice);
-        balcBobB4 = usdt.balanceOf(bob);
-        console.log("bob USDT balc:", balcBobB4);
-        assertEq(balcBobB4, amount);
-
-        sales = new ERC721Sales(address(usdt), address(dragons), priceInWeiEth, priceInWeiToken);
+        usdt.mint(alice, 1000e6);
+        aGenBf = usdt.balanceOf(alice);
+        console.log("Alice USDT:", aGenBf);
+        assertEq(aGenBf, 1000e6);
+        tokenAddr = address(usdt);
+        sales = new ERC721Sales(tokenAddr, address(dragons), priceInWeiEth, priceInWeiToken);
         salesAddr = address(sales);
+    }
+
+    function _balc(address user, string memory userName, address tokenCtrt, string memory nameTheOther)
+        private
+        view
+        returns (uint256 uTok, uint256 uNft, uint256 cTok, uint256 cNft)
+    {
+        address theOther = salesAddr;
+        if (tokenCtrt == zero) {
+            cTok = theOther.balance;
+            cNft = dragons.balanceOf(theOther);
+            console.log("%s ETH in Szabo: %s, NFT: %s", nameTheOther, cTok / 1e12, cNft);
+
+            uTok = user.balance;
+            uNft = dragons.balanceOf(user);
+            console.log("%s ETH in Szabo: %s, NFT: %s", userName, uTok / 1e12, uNft);
+        } else {
+            cTok = usdt.balanceOf(theOther);
+            cNft = dragons.balanceOf(theOther);
+            console.log("%s usdt: %s, NFT: %s", nameTheOther, cTok / tokenDp, cNft);
+
+            uTok = usdt.balanceOf(user);
+            uNft = dragons.balanceOf(user);
+            console.log("%s usdt: %s, NFT: %s", userName, uTok / tokenDp, uNft);
+        }
     }
 
     function testInit() external {
         console.log("----== testInit");
-        dragons.safeTransferFromBatch(tis, salesAddr, 0, 9);
-        nftBalc = dragons.balanceOf(salesAddr);
-        console.log("nftBalc:", nftBalc);
-        assertEq(nftBalc, 10);
+        console.log("safeApproveBatch...");
+        dragons.safeApproveBatch(salesAddr, 0, 9);
+
+        for (uint256 i = 0; i <= 9; i++) {
+            address approvedOptr = dragons.getApproved(i);
+            //console.log("approved operator: ", approvedOptr);
+            assertEq(approvedOptr, salesAddr);
+        }
+        /*dragons.safeTransferFromBatch(tis, salesAddr, 0, 9);
+        aNft = dragons.balanceOf(salesAddr);
+        console.log("aNft:", aNft);
+        assertEq(aNft, 10); */
 
         console.log("--------== buyNFTviaERC20");
-        balcTokB4 = usdt.balanceOf(tis);
-        balcNftB4 = dragons.balanceOf(tis);
-        console.log("balcTokB4:", balcTokB4, ", balcNftB4:", balcNftB4);
-
+        (aGenBf, aNftBf, cGenBf, cNftBf) = _balc(alice, "Alice", tokenAddr, "SalesCtrt");
+        vm.startPrank(alice);
         usdt.approve(salesAddr, priceInWeiToken);
         sales.buyNFTviaERC20(0);
-        balcTokAf = usdt.balanceOf(tis);
-        balcNftAf = dragons.balanceOf(tis);
-        console.log("balcTokAf:", balcTokAf, ", balcNftAf:", balcNftAf);
-        assertEq(balcTokB4 - balcTokAf, priceInWeiToken);
-        assertEq(balcNftAf - balcNftB4, 1);
-
-        balcTokAf = usdt.balanceOf(salesAddr);
-        console.log("sales balcTokAf:", balcTokAf);
-        assertEq(balcTokAf, priceInWeiToken);
+        vm.stopPrank();
+        (aGenAf, aNftAf, cGenAf, cNftAf) = _balc(alice, "Alice", tokenAddr, "SalesCtrt");
+        assertEq(aGenBf - aGenAf, priceInWeiToken);
+        assertEq(aNftAf - aNftBf, 1);
+        assertEq(cGenAf - cGenBf, priceInWeiToken);
 
         console.log("--------== withdrawERC20");
-        balcTokB4 = usdt.balanceOf(tis);
-        console.log("balcTokB4:", balcTokB4);
+        (aGenBf, aNftBf, cGenBf, cNftBf) = _balc(tis, "tis", tokenAddr, "SalesCtrt");
         sales.withdrawERC20(tis, usdt.balanceOf(salesAddr));
-        balcTokAf = usdt.balanceOf(tis);
-        console.log("balcTokAf:", balcTokAf);
-        assertEq(balcTokAf, balcTokB4 + priceInWeiToken);
+        (aGenAf, aNftAf, cGenAf, cNftAf) = _balc(tis, "tis", tokenAddr, "SalesCtrt");
+        assertEq(aGenAf, aGenBf + priceInWeiToken);
 
         console.log("--------== BuyNFTviaETH");
-        balcEthB4 = tis.balance;
-        balcNftB4 = balcNftAf;
-        console.log("balcEthB4:", balcEthB4);
-
+        (aGenBf, aNftBf, cGenBf, cNftBf) = _balc(alice, "Alice", zero, "SalesCtrt");
+        vm.startPrank(alice);
         sales.buyNFTviaETH{value: priceInWeiEth}(1);
-        balcEthAf = tis.balance;
-        console.log("balcEthAf:", balcEthAf);
-        console.log("ETH decrease:", balcEthB4 - balcEthAf);
-        balcEthB4 = balcEthAf;
-
-        balcNftAf = dragons.balanceOf(tis);
-        console.log("balcNftAf:", balcNftAf);
-        //assertEq(balcEthB4 - balcEthAf, priceInWeiEth);
-        assertEq(balcNftAf - balcNftB4, 1);
-
-        balcEthAf = salesAddr.balance;
-        console.log("sales balcEthAf:", balcEthAf);
-        assertEq(balcEthAf, priceInWeiEth);
+        vm.stopPrank();
+        (aGenAf, aNftAf, cGenAf, cNftAf) = _balc(alice, "Alice", zero, "SalesCtrt");
+        assertEq(aGenBf - aGenAf, priceInWeiEth);
+        assertEq(aNftAf - aNftBf, 1);
+        assertEq(cGenAf - cGenBf, priceInWeiEth);
 
         console.log("--------== withdrawETH");
-        sales.withdrawETH(payable(tis), balcEthAf);
-        balcEthAf = salesAddr.balance;
-        console.log("sales balcEthAf:", balcEthAf);
-        balcEthAf = tis.balance;
-        console.log("this balcEthAf:", balcEthAf);
-        console.log("ETH increase:", balcEthAf - balcEthB4);
+        (aGenBf, aNftBf, cGenBf, cNftBf) = _balc(tis, "tis", zero, "SalesCtrt");
+        sales.withdrawETH(payable(tis), cGenAf);
+        console.log("after withdrawETH");
+        (aGenAf, aNftAf, cGenAf, cNftAf) = _balc(tis, "tis", zero, "SalesCtrt");
+        assertEq(cGenAf, 0);
+        assertEq(aGenAf - aGenBf, priceInWeiEth);
     }
 }
