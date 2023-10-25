@@ -16,7 +16,7 @@ interface IERC721dup {
 }
 
 contract AuctionDutch {
-    uint256 private constant DURATION = 7 days;
+    uint256 public constant DURATION = 7 days;
 
     IERC721dup public immutable nft;
     uint256 public immutable nftId;
@@ -47,6 +47,8 @@ contract AuctionDutch {
         return startingPrice - discount;
     }
 
+    error FailedInnerCall();
+
     function buy() external payable {
         require(block.timestamp < expiresAt, "auction expired");
 
@@ -58,6 +60,10 @@ contract AuctionDutch {
         if (refund > 0) {
             payable(msg.sender).transfer(refund);
         }
-        selfdestruct(seller);
+        (bool success,) = seller.call{value: address(this).balance}("");
+        if (!success) {
+            revert("call{value} failed");
+        }
+        //selfdestruct(seller);// sendValue
     }
 }

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
-//TODO: https://github.com/OpenZeppelin/openzeppelin-contracts/releases/tag/v5.0.0
 
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
@@ -15,7 +15,7 @@ contract ERC721Token is Ownable, ERC721Burnable, ERC721Enumerable, ERC721URIStor
     string private _baseTokenURI;
 
     //constructor() ERC721("Dragons", "DRG") {}
-    constructor(string memory name, string memory symbol) ERC721(name, symbol) {
+    constructor(string memory name, string memory symbol) Ownable(msg.sender) ERC721(name, symbol) {
         // Mint tokens 0 ~ 9 to msg.sender
         safeMintBatch(msg.sender, 0, 9);
     }
@@ -66,18 +66,25 @@ contract ERC721Token is Ownable, ERC721Burnable, ERC721Enumerable, ERC721URIStor
     }
 
     function exists(uint256 tokenId) public view returns (bool) {
-        return _exists(tokenId);
+        return _ownerOf(tokenId) != address(0);
     }
 
     //ERC721Enumerable
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize)
+    function _update(address to, uint256 tokenId, address auth)
         internal
         virtual
         override(ERC721, ERC721Enumerable)
+        returns (address)
     {
-        super._beforeTokenTransfer(from, to, tokenId, batchSize);
+        return super._update(to, tokenId, auth);
     }
 
+    //ERC721Enumerable
+    function _increaseBalance(address account, uint128 amount) internal virtual override(ERC721, ERC721Enumerable) {
+        super._increaseBalance(account, amount);
+    }
+
+    //ERC721, ERC721Enumerable, ERC721URIStorage
     function supportsInterface(bytes4 interfaceId)
         public
         view
@@ -87,25 +94,25 @@ contract ERC721Token is Ownable, ERC721Burnable, ERC721Enumerable, ERC721URIStor
     {
         return super.supportsInterface(interfaceId);
     }
-    //ERC721URIStorage
 
     // Already included in ERC721Burnable!!!
     // function burn(uint256 tokenId) public override {}
+    /*function _burn(uint256 tokenId) internal virtual override(ERC721, ERC721URIStorage) {
+        super._burn(tokenId);
+    } */
 
-    function _burn(uint256 tokenId) internal virtual override(ERC721, ERC721URIStorage) {
-        super._burn(tokenId); //ERC721URIStorage._burn()
-    }
-
+    //ERC721URIStorage
     function tokenURI(uint256 tokenId) public view virtual override(ERC721, ERC721URIStorage) returns (string memory) {
-        return super.tokenURI(tokenId); //ERC721URIStorage.tokenURI()
+        return super.tokenURI(tokenId);
     }
 
+    //ERC721URIStorage
     function setTokenURI(uint256 tokenId, string memory _tokenURI) public {
         _setTokenURI(tokenId, _tokenURI);
     }
 }
 
-contract ERC721Receiver {
+contract ERC721Receiver is IERC721Receiver {
     event OnERC721Received(address indexed operator, address indexed from, uint256 indexed tokenId, bytes data);
 
     bytes4 private constant _ERC721_RECEIVED = 0x150b7a02;

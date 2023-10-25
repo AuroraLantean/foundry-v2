@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-// import "xyz";
+// import
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol"; //includes IERC20
 //totalSupply(), tokenOfOwnerByIndex(address owner, uint256 index), tokenByIndex(uint256 index)
@@ -10,17 +10,18 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol"; //includes IER
 //safeTransfer, safeTransferFrom, safeApprove, safeIncreaseAllowance, safeDecreaseAllowance
 
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+//import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol"; //includes IERC721, which includes IERC165.sol
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol"; // includes IERC721
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol"; //includes IERC721Receiver
-
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+//import "@openzeppelin/contracts/utils/Pausable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "forge-std/console.sol";
 
 //------------------------------==
-interface IERC721Full is IERC165, IERC721Metadata, IERC721Enumerable {
+interface IERC721Full is IERC721Enumerable, IERC721Metadata {
     function exists(uint256 tokenId) external view returns (bool);
-} // use this instead of the full contract because we only need a few functions like transfer and transferFrom, etc...
+} // use this instead of the full contract because we only need a few functions like transferFrom, safeTransferFrom, ownerOf, exists, etc...
 //----------------------==
 
 contract ERC721Sales is Ownable, ERC721Holder, ReentrancyGuard {
@@ -32,9 +33,11 @@ contract ERC721Sales is Ownable, ERC721Holder, ReentrancyGuard {
     IERC721Full public ierc721;
     IERC20 public token;
 
-    constructor(address _token, address _addrNFT, uint256 _priceInWeiETH, uint256 _priceInWeiToken) {
+    constructor(address _token, address _addrNFT, uint256 _priceInWeiETH, uint256 _priceInWeiToken)
+        Ownable(msg.sender)
+    {
         require(_token != address(0) || _addrNFT != address(0), "should not be zero");
-        require(_token.isContract() || _addrNFT.isContract(), "should be contracts");
+        require(_token.code.length != 0 || _addrNFT.code.length != 0, "should be contracts");
         token = IERC20Metadata(_token);
         ierc721 = IERC721Full(address(_addrNFT));
         priceInWeiETH = _priceInWeiETH;
@@ -42,12 +45,12 @@ contract ERC721Sales is Ownable, ERC721Holder, ReentrancyGuard {
     }
 
     function setNFT(address _addrNFT) external onlyOwner {
-        require(_addrNFT != address(0) && _addrNFT.isContract(), "input invalid");
+        require(_addrNFT != address(0) && _addrNFT.code.length != 0, "input invalid");
         ierc721 = IERC721Full(address(_addrNFT));
     }
 
     function setToken(address _token) external onlyOwner {
-        require(_token != address(0) && _token.isContract(), "input invalid");
+        require(_token != address(0) && _token.code.length != 0, "input invalid");
         token = IERC20Metadata(_token);
     }
 

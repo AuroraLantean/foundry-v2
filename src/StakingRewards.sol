@@ -34,7 +34,7 @@ contract StakingRewards is Ownable {
     // User address => staked amount
     mapping(address => uint256) public staked;
 
-    constructor(address _stakingToken, address _rewardToken) {
+    constructor(address _stakingToken, address _rewardToken) Ownable(msg.sender) {
         stakingToken = IERC20(_stakingToken);
         rewardsToken = IERC20(_rewardToken);
     }

@@ -9,13 +9,12 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol"; //safeTransfer, safeTransferFrom, safeApprove, safeIncreaseAllowance, safeDecreaseAllowance
-import "@openzeppelin/contracts/security/Pausable.sol";
 
 import "forge-std/console.sol";
 
 contract ERC20Token is Ownable, ERC20, ERC20Burnable {
     //constructor() ERC20("GoldCoin", "GLDC") {}
-    constructor(string memory name, string memory symbol) ERC20(name, symbol) {
+    constructor(string memory name, string memory symbol) Ownable(msg.sender) ERC20(name, symbol) {
         // Mint 100 tokens to msg.sender
         // Similar to how
         // 1 dollar = 100 cents
@@ -93,10 +92,6 @@ contract ERC20Receiver {
 
     function safeTransfer(address erc20Addr, address to, uint256 amount) public {
         IERC20(erc20Addr).safeTransfer(to, amount);
-    }
-
-    function safeApprove(address erc20Addr, address spender, uint256 amount) public {
-        IERC20(erc20Addr).safeApprove(spender, amount);
     }
 
     function forceApprove(address erc20Addr, address spender, uint256 amount) public {

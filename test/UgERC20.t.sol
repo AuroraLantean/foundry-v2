@@ -6,47 +6,47 @@ import "src/UgERC20.sol";
 import "src/UgUUPS.sol";
 
 contract UgERC20Test is Test {
-    address zero = address(0);
-    address alice = address(1);
-    address bob = address(2);
-    address hacker = address(6);
-    bool ok;
-    ProxyZ proxyStaking;
-    ProxyZ proxyERC20;
-    ERC20UToken erc20U;
-    ERC20UTokenV2 erc20UV2;
-    ERC20UTokenHack erc20UHack;
-    ERC20UStaking erc20UStaking;
-    ERC20UStakingV2 erc20UStakingV2;
-    ERC20UStakingHack erc20UStakingHack;
-    bytes data;
-    address proxyERC20Addr;
-    address proxyStakingAddr;
-    address erc20UAddr;
-    address erc20UAddrV2;
-    address erc20UAddrM;
-    address erc20UHackAddr;
-    address erc20UStakingAddr;
-    address erc20UStakingAddrM;
-    address erc20UStakingV2Addr;
-    address erc20UStakingHackAddr;
-    address ownerM;
-    uint8 initVersion;
-    uint256 version;
-    uint256 versionM;
-    uint256 delta;
-    uint256 num1;
-    uint256 num1M;
-    uint256 stakedAmt;
-    uint256 stakedAmtM;
-    uint256 withdrawnAmt;
-    uint256 withdrawnAmtM;
-    uint256 amount1;
-    uint256 balcBobM;
-    uint256 balcAliceM;
-    uint256 stakedBob;
-    uint256 stakedBobM;
-    uint256 stakedBobB4;
+    address public zero = address(0);
+    address public alice = address(1);
+    address public bob = address(2);
+    address public hacker = address(6);
+    bool public ok;
+    ProxyZ public proxyStaking;
+    ProxyZ public proxyERC20;
+    ERC20UToken public erc20U;
+    ERC20UTokenV2 public erc20UV2;
+    ERC20UTokenHack public erc20UHack;
+    ERC20UStaking public erc20UStaking;
+    ERC20UStakingV2 public erc20UStakingV2;
+    ERC20UStakingHack public erc20UStakingHack;
+    bytes public data;
+    address public proxyERC20Addr;
+    address public proxyStakingAddr;
+    address public erc20UAddr;
+    address public erc20UAddrV2;
+    address public erc20UAddrM;
+    address public erc20UHackAddr;
+    address public erc20UStakingAddr;
+    address public erc20UStakingAddrM;
+    address public erc20UStakingV2Addr;
+    address public erc20UStakingHackAddr;
+    address public ownerM;
+    uint8 public initVersion;
+    uint256 public version;
+    uint256 public versionM;
+    uint256 public delta;
+    uint256 public num1;
+    uint256 public num1M;
+    uint256 public stakedAmt;
+    uint256 public stakedAmtM;
+    uint256 public withdrawnAmt;
+    uint256 public withdrawnAmtM;
+    uint256 public amount1;
+    uint256 public balcBobM;
+    uint256 public balcAliceM;
+    uint256 public stakedBob;
+    uint256 public stakedBobM;
+    uint256 public stakedBobB4;
 
     function setUp() external {
         console.log("---------== Setup()");
@@ -91,7 +91,7 @@ contract UgERC20Test is Test {
         erc20U.approve(proxyStakingAddr, amount1);
     }
 
-    function test_1_init() external {
+    function testInit() external {
         console.log("----== test_1_init");
 
         console.log("values from proxyERC20");
@@ -122,7 +122,7 @@ contract UgERC20Test is Test {
     }
 
     //tests the upgradeability mechanism of the contracts
-    function test_3_Upgrade() external {
+    function test3Upgrade() external {
         console.log("----== test_3_Upgrade");
         //ERC20UStakingHack erc20UStakingHack;
         vm.startPrank(hacker);
@@ -130,7 +130,7 @@ contract UgERC20Test is Test {
         erc20UStakingHackAddr = address(erc20UStakingHack);
 
         vm.expectRevert();
-        proxyStaking.upgradeTo(erc20UStakingHackAddr);
+        proxyStaking.upgradeToAndCall(erc20UStakingHackAddr, "");
         vm.stopPrank();
         console.log("hacker cannot upgrade");
         //erc20U.initialize(num1);//Must prevent hacker to initialize first
@@ -151,7 +151,7 @@ contract UgERC20Test is Test {
         //-----------== Invoke upgradeTo()
         console.log("Invoke upgradeTo()");
         vm.prank(alice);
-        proxyStaking.upgradeTo(erc20UStakingV2Addr);
+        proxyStaking.upgradeToAndCall(erc20UStakingV2Addr, "");
         console.log("erc20UStakingV2Addr:", erc20UStakingV2Addr);
 
         erc20UStakingAddrM = proxyStaking.getImplementation();

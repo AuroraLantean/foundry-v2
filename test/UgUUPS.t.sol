@@ -16,33 +16,33 @@ import "openzeppelin-contracts/contracts/proxy/Clones.sol";
  * @notice ERC1967 minimal proxy is just used to demonstrate the condition bypassing in the UUPS contract
  */
 contract UgUUPSTest is Test {
-    address zero = address(0);
-    address alice = address(1);
-    address bob = address(2);
-    address hacker = address(6);
-    bool ok;
-    Implettn impl;
-    ImplettnV2 impl2;
-    ImplettnHack implHack;
-    ProxyZ proxy;
-    ProxyZ proxy2;
-    bytes data;
-    address implAddr;
-    address implAddr2;
-    address implemttnAddrM;
-    address imptHackAddr;
-    address proxyAddr;
-    address ownerM;
-    uint8 initVersion;
-    uint256 delta;
-    uint256 num1;
-    uint256 num1M;
-    uint256 num2;
-    uint256 num2M;
+    address public zero = address(0);
+    address public alice = address(1);
+    address public bob = address(2);
+    address public hacker = address(6);
+    bool public ok;
+    Implettn public impl;
+    ImplettnV2 public impl2;
+    ImplettnHack public implHack;
+    ProxyZ public proxy;
+    ProxyZ public proxy2;
+    bytes public data;
+    address public implAddr;
+    address public implAddr2;
+    address public implemttnAddrM;
+    address public imptHackAddr;
+    address public proxyAddr;
+    address public ownerM;
+    uint8 public initVersion;
+    uint256 public delta;
+    uint256 public num1;
+    uint256 public num1M;
+    uint256 public num2;
+    uint256 public num2M;
 
     using Clones for address;
 
-    bytes32 internal constant EIP1967_SLOT = bytes32(uint256(keccak256("eip1967.proxy.implementation")) - 1);
+    bytes32 internal constant _EIP1967_SLOT = bytes32(uint256(keccak256("eip1967.proxy.implementation")) - 1);
 
     function setUp() external {
         console.log("---------== Setup()");
@@ -74,7 +74,7 @@ contract UgUUPSTest is Test {
      *  1 - The implementation contract has state values
      *  2 - The proxy contract has variables values
      */
-    function test_1initializable() external {
+    function test1initializable() external {
         console.log("----== test_1initializable");
         console.log("values from implementation");
         ownerM = impl.owner();
@@ -124,20 +124,20 @@ contract UgUUPSTest is Test {
         assertEq(ok, true);
         console.log("hackers cannot re-initialize the implementation");
 
-        bytes32 proxySlot = vm.load(proxyAddr, EIP1967_SLOT);
+        bytes32 proxySlot = vm.load(proxyAddr, _EIP1967_SLOT);
         assertEq(proxySlot, bytes32(uint256(uint160(implAddr))));
-        console.log("EIP1967_SLOT in Proxy holds the implementation address");
+        console.log("_EIP1967_SLOT in Proxy holds the implementation address");
     }
 
     //tests the upgradeability mechanism of the contracts
-    function test_3UpgradeImplementation() external {
+    function test3UpgradeImplementation() external {
         console.log("----== test_3UpgradeImplementation");
         vm.startPrank(hacker);
         implHack = new ImplettnHack();
         imptHackAddr = address(implHack);
 
         vm.expectRevert();
-        proxy.upgradeTo(imptHackAddr);
+        proxy.upgradeToAndCall(imptHackAddr, "");
         vm.stopPrank();
         console.log("hacker cannot upgrade");
         //impl.initialize(num1);//Must prevent hacker to initialize first
@@ -146,13 +146,13 @@ contract UgUUPSTest is Test {
         implemttnAddrM = proxy.getImplementation();
         console.log("implemttnAddrM: ", implemttnAddrM);
         assertEq(implAddr, implemttnAddrM);
-        //bytes32 proxySlot = vm.load(proxyAddr, EIP1967_SLOT);
+        //bytes32 proxySlot = vm.load(proxyAddr, _EIP1967_SLOT);
         //assertEq(proxySlot, bytes32(uint256(uint160(implAddr))));
 
         //-----------== Invoke upgradeTo()
         console.log("Invoke upgradeTo()");
         vm.prank(alice);
-        proxy.upgradeTo(implAddr2);
+        proxy.upgradeToAndCall(implAddr2, "");
         console.log("implAddr2:      ", implAddr2);
         implemttnAddrM = proxy.getImplementation();
         console.log("implemttnAddrM: ", implemttnAddrM);
@@ -197,17 +197,18 @@ contract UgUUPSTest is Test {
         console.log("Upgrade is successful!");
     }
 
-    function test_4upgradeToAndCallUUPS() external {
+    function test4upgradeToAndCallUUPS() external {
         console.log("----== test_4upgradeToAndCallUUPS");
         console.log("implAddr:       ", implAddr);
         implemttnAddrM = proxy.getImplementation();
         console.log("implemttnAddrM: ", implemttnAddrM);
         assertEq(implAddr, implemttnAddrM);
 
-        //-----------== Invoke upgradeToAndCallUUPS()
-        console.log("Invoke upgradeToAndCallUUPS()");
+        //TODO: test after changing upgradeToAndCallUUPS to upgradeToAndCall
+        //-----------== Invoke upgradeToAndCall()
+        console.log("Invoke upgradeToAndCall()");
         vm.prank(alice);
-        proxy.upgradeToAndCallUUPS(implAddr2, "", false);
+        proxy.upgradeToAndCall(implAddr2, "");
         console.log("implAddr2:      ", implAddr2);
         implemttnAddrM = proxy.getImplementation();
         console.log("implemttnAddrM: ", implemttnAddrM);
@@ -251,10 +252,10 @@ contract UgUUPSTest is Test {
     /**
      * @notice This function creates an attack scenario to upgrade the contract to a malicious contract. As the implementation contract is not initialized at first, we'll try to upgrade the contract to a malicious contract.
      */
-    function test_2uninitializedImplAttack() external {
+    function test2uninitializedImplAttack() external {
         console.log("----== test_2uninitializedImplAttack");
         // now the malicious person becomes an authorized pesron for the implementation contract
-        // Let's try to change the EIP1967_SLOT address of proxy to a new contract
+        // Let's try to change the _EIP1967_SLOT address of proxy to a new contract
         vm.expectRevert("Initializable: contract is already initialized");
         vm.startPrank(hacker);
         impl.initialize(num1);

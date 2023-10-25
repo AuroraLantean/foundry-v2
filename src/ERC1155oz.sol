@@ -2,9 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/console.sol";
-
-/**
- */
+// import
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol"; //_mint, _burn
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
@@ -13,14 +11,14 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import "@openzeppelin/contracts/access/Ownable.sol"; //owner(), onlyOwner, renounceOwnership, transferOwnership,
 
-import "@openzeppelin/contracts/security/Pausable.sol"; //paused, whenNotPaused, whenPaused, _pause, _unpause
+import "@openzeppelin/contracts/utils/Pausable.sol"; //paused, whenNotPaused, whenPaused, _pause, _unpause
 
-import "@openzeppelin/contracts/utils/introspection/ERC1820Implementer.sol";
+//import "@openzeppelin/contracts/utils/introspection/ERC1820Implementer.sol";
 
 //https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/mocks/ERC1155Mock.sol
 //from ERC1155.sol
 contract ERC1155oz is Ownable, ERC1155 {
-    constructor(string memory uri) ERC1155(uri) {
+    constructor(string memory uri) Ownable(msg.sender) ERC1155(uri) {
         //console.log("[c] initializer");
     }
 
@@ -56,7 +54,7 @@ contract ERC1155oz is Ownable, ERC1155 {
 //------------------------------==
 //------------------------------==
 contract ERC1155Receiver is Ownable, Pausable, ERC165, IERC1155Receiver {
-    using Address for address;
+    //using Address for address;
 
     //https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/mocks/ERC1155ReceiverMock.sol
     bytes4 private _recRetval;
@@ -92,9 +90,9 @@ contract ERC1155Receiver is Ownable, Pausable, ERC165, IERC1155Receiver {
     //---------------==
     ERC1155oz public erc1155;
 
-    constructor(ERC1155oz _erc1155) {
+    constructor(ERC1155oz _erc1155) Ownable(msg.sender) {
         require(address(_erc1155) != address(0), "invalid token address");
-        require(address(_erc1155).isContract(), "is NOT a contract");
+        require(address(_erc1155).code.length != 0, "is NOT a contract");
         erc1155 = _erc1155;
 
         _recRetval = 0xf23a6e61;

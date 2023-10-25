@@ -16,31 +16,32 @@ import "forge-std/console.sol";
 contract ProxyZ is ERC1967Proxy, Ownable {
     //ERC1967Proxy/constuctor(): assert(EIP1967_SLOT == bytes32(uint256(keccak256("eip1967.proxy.implementation")) - 1));
 
-    constructor(address impl, bytes memory data) ERC1967Proxy(impl, data) {}
+    constructor(address impl, bytes memory data) ERC1967Proxy(impl, data) Ownable(msg.sender) {}
+
+    receive() external payable {
+        console.log("ETH received from:", msg.sender, msg.value);
+    }
 
     //------------== ERC1967Upgrade
     function getImplementation() external view returns (address) {
         return super._implementation();
     }
 
-    function upgradeTo(address newImplementation) public onlyOwner {
-        _upgradeTo(newImplementation);
+    function upgradeToAndCall(address newImplementation, bytes memory data) public onlyOwner {
+        ERC1967Utils.upgradeToAndCall(newImplementation, data);
     }
 
-    function upgradeToAndCall(address newImplementation, bytes memory data, bool forceCall) public onlyOwner {
-        _upgradeToAndCall(newImplementation, data, forceCall);
-    }
-
+    /* TODO: run test for OpenZeppelin v5
     function upgradeToAndCallUUPS(address newImplementation, bytes memory data, bool forceCall) public onlyOwner {
         _upgradeToAndCallUUPS(newImplementation, data, forceCall);
-    }
+    } */
 
     function getAdmin() public view returns (address) {
-        return _getAdmin();
+        return ERC1967Utils.getAdmin();
     }
 
-    function setAdmin(address _adminNew) external onlyOwner {
-        _changeAdmin(_adminNew);
+    function changeAdmin(address _adminNew) external onlyOwner {
+        ERC1967Utils.changeAdmin(_adminNew);
     }
 }
 

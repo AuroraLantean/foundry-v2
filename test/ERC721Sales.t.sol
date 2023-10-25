@@ -41,8 +41,12 @@ contract ERC721SalesTest is Test, ERC721Holder {
 
     function setUp() external {
         console.log("---------== Setup()");
-        deal(alice, 1 ether); //hoax(addr,uint): deal + prank
+        deal(alice, 1 ether);
         deal(bob, 1 ether);
+        aGenBf = alice.balance;
+        console.log("Alice ETH:", aGenBf);
+        aGenBf = bob.balance;
+        console.log("Bob ETH:", aGenBf);
 
         //USDT, USDC use 6 dp !!! But DAI has 18!!
         usdt = new ERC20DP6("TetherUSD", "USDT");
