@@ -1,16 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+// import
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol"; //_mint, _burn
-
-import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
-//safeTransfer, safeTransferFrom, safeApprove, safeIncreaseAllowance, safeDecreaseAllowance
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol"; //owner(), onlyOwner, renounceOwnership, transferOwnership,
 
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol"; //paused, whenNotPaused, whenPaused, _pause, _unpause
+import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol"; //paused, whenNotPaused, whenPaused, _pause, _unpause
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20BurnableUpgradeable.sol"; //burn, burnFrom
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+//safeTransfer, safeTransferFrom, safeApprove, safeIncreaseAllowance, safeDecreaseAllowance
 
 import "forge-std/console.sol";
 
@@ -19,7 +20,7 @@ contract ERC20UToken is OwnableUpgradeable, ERC20Upgradeable, ERC20BurnableUpgra
 
     function initialize(string memory name, string memory symbol) public initializer {
         //console.log("ERC20Token initialize msg.sender:", msg.sender);
-        __Ownable_init_unchained();
+        __Ownable_init_unchained(msg.sender);
         __ERC20_init_unchained(name, symbol);
         num1 = 5;
         //_mint(msg.sender, initialSupply);
@@ -66,8 +67,9 @@ contract ERC20UTokenHack is ERC20UToken {
 
 //------------------------------==
 contract ERC20UStaking is Initializable, OwnableUpgradeable, PausableUpgradeable {
-    using SafeERC20Upgradeable for IERC20Upgradeable;
-    using AddressUpgradeable for address;
+    using SafeERC20 for IERC20;
+    //using SafeERC20Upgradeable for IERC20Upgradeable;
+    using Address for address;
 
     uint256 public num1;
     address public rwTokenAddr;
@@ -76,10 +78,10 @@ contract ERC20UStaking is Initializable, OwnableUpgradeable, PausableUpgradeable
     function initialize(address _rwTokenAddr) external initializer {
         //console.log("ERC20Staking initialize msg.sender:", msg.sender);
         require(_rwTokenAddr != address(0), "invalid token address");
-        require(_rwTokenAddr.isContract(), "is NOT a contract");
+        require(_rwTokenAddr.code.length != 0, "should be a contract");
         rwTokenAddr = _rwTokenAddr;
         num1 = 11;
-        __Ownable_init();
+        __Ownable_init(msg.sender);
         __Pausable_init();
     }
 
@@ -89,7 +91,7 @@ contract ERC20UStaking is Initializable, OwnableUpgradeable, PausableUpgradeable
     }
 
     function stake(address tokenAddr, uint256 _amount) external whenNotPaused {
-        IERC20Upgradeable token = IERC20Upgradeable(tokenAddr);
+        IERC20 token = IERC20(tokenAddr);
 
         token.safeTransferFrom(msg.sender, address(this), _amount);
         staked[msg.sender] += _amount;
@@ -97,8 +99,9 @@ contract ERC20UStaking is Initializable, OwnableUpgradeable, PausableUpgradeable
 }
 
 contract ERC20UStakingV2 is ERC20UStaking {
-    using SafeERC20Upgradeable for IERC20Upgradeable;
-    using AddressUpgradeable for address;
+    using SafeERC20 for IERC20;
+    //using SafeERC20Upgradeable for IERC20;
+    using Address for address;
 
     mapping(address => uint256) public rewardRates;
 
@@ -107,7 +110,7 @@ contract ERC20UStakingV2 is ERC20UStaking {
     }
 
     function withdraw(address tokenAddr, uint256 _amount) external whenNotPaused {
-        IERC20Upgradeable token = IERC20Upgradeable(tokenAddr);
+        IERC20 token = IERC20(tokenAddr);
         token.safeTransfer(msg.sender, _amount);
         staked[msg.sender] -= _amount;
     }

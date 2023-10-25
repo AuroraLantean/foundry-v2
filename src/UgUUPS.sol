@@ -57,7 +57,7 @@ contract Implettn is Initializable, UUPSUpgradeable, OwnableUpgradeable {
         //called by Proxy via delegatecall so that the variables here are stored in the proxy storage
         //console.log("Implettn/initialize()", msg.sender, _num);
         __UUPSUpgradeable_init();
-        __Ownable_init();
+        __Ownable_init(msg.sender);
         num1 = _num;
     }
 
@@ -69,7 +69,7 @@ contract Implettn is Initializable, UUPSUpgradeable, OwnableUpgradeable {
         num1 = _b;
     }
 
-    function getInitialized() external view returns (uint8) {
+    function getInitialized() external view returns (uint64) {
         return _getInitializedVersion();
     }
 

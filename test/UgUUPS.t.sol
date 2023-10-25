@@ -33,7 +33,7 @@ contract UgUUPSTest is Test {
     address public imptHackAddr;
     address public proxyAddr;
     address public ownerM;
-    uint8 public initVersion;
+    uint64 public initVersion;
     uint256 public delta;
     uint256 public num1;
     uint256 public num1M;
@@ -265,7 +265,7 @@ contract UgUUPSTest is Test {
         proxy2 = new ProxyZ(implAddr, "");
 
         vm.expectRevert("Function must be called through delegatecall");
-        impl.upgradeTo(implAddr2);
+        impl.upgradeToAndCall(implAddr2, "");
 
         vm.expectRevert("Function must be called through active proxy");
         (ok,) = address(proxy2).delegatecall(abi.encodeWithSignature("upgradeTo(address)", implAddr2));
@@ -274,7 +274,7 @@ contract UgUUPSTest is Test {
         // Let's try to bypass the preceding conditions with minimal proxies
         address implClone = Clones.clone(implAddr);
         vm.expectRevert("Function must be called through active proxy");
-        Implettn(implClone).upgradeTo(implAddr2);
+        Implettn(implClone).upgradeToAndCall(implAddr2, "");
         vm.stopPrank();
         /*  The first condition is bypassed however the second one is persistent!
             It illustrates that if a contract inherits the UUPSUpgradeable.sol contract
