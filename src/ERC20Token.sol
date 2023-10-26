@@ -13,26 +13,25 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol"; //safeTransfer
 import "forge-std/console.sol";
 
 contract ERC20Token is Ownable, ERC20, ERC20Burnable {
-    //constructor() ERC20("GoldCoin", "GLDC") {}
     constructor(string memory name, string memory symbol) Ownable(msg.sender) ERC20(name, symbol) {
-        // Mint 100 tokens to msg.sender
-        // Similar to how
-        // 1 dollar = 100 cents
-        // 1 token = 1 * (10 ** decimals)
-        _mint(msg.sender, 9000000000 * 10 ** uint256(decimals()));
+        mintToOwner(9000000000);
     }
 
-    function mintToOwner() public onlyOwner {
-        _mint(msg.sender, 90000000 * 10 ** uint256(decimals()));
+    function mintToOwner(uint256 amountInDp) public onlyOwner {
+        _mint(owner(), amountInDp * 10 ** uint256(decimals()));
     }
 
     function mint(address user, uint256 amount) public onlyOwner returns (bool) {
         _mint(user, amount);
         return true;
     }
-}
-//USDT, USDC use 6 dp !!! But DAI has 18!!
 
+    function getData(address target) public view returns (string memory, uint8, uint256) {
+        return (symbol(), decimals(), balanceOf(target));
+    }
+}
+
+//USDT, USDC use 6 dp !!! But DAI has 18!!
 contract ERC20DP6 is ERC20Token {
     constructor(string memory name, string memory symbol) ERC20Token(name, symbol) {}
 

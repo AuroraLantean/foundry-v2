@@ -90,8 +90,8 @@
     "menu": "echo 'test- anvil - deployAnvil - makeAbi'",
     "anvil": "anvil -m 'test test test test test test test test test test test junk'",
     "anvil2": "anvil -m $MNEMONIC",
-    "deployAnvil": "forge script script/LocalDeploymt.s.sol:AnvilDeploymtScript --fork-url $ANVIL_RPC --broadcast -vvvv; echo makeabi_erc721sales",
-    "makeabi_erc721sales": "bun run makeabiERC721sales.ts",
+    "erc721sales_deployAnvil": "forge script script/LocalDeploymt.s.sol:AnvilDeploymtScript --fork-url $ANVIL_RPC --broadcast -vvvv; echo erc721sales_makeabi",
+    "erc721sales_makeabi": "bun run makeabiERC721sales.ts",
     "getCount": "cast call $CONTRACT_ADDRESS 'getCount()(uint256)'",
     "setCount": "cast send $CONTRACT_ADDRESS 'setCount(uint256)' 327 --private-key $PRIVATE_KEY"
   },

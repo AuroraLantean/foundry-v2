@@ -28,16 +28,25 @@ const out = deployment?.transactions.map(box => {
   }
 })
 //lg("out:", out)
+let erc20dp6Addr = '';
+let erc721Addr = '';
+let erc721salesAddr = '';
 
 const out2 = out?.map(box => {
-  if (box?.contractName === "ERC20DP6") return {
-    ...box, abi: erc20dp6.abi
+  if (box?.contractName === "ERC20DP6") {
+    erc20dp6Addr = box.contractAddress;
+    return {
+    ...box, abi: erc20dp6.abi}
   }
-  if (box?.contractName === "ERC721Token") return {
-    ...box, abi: erc721token.abi
+  if (box?.contractName === "ERC721Token") {
+      erc721Addr = box.contractAddress;
+        return {
+    ...box, abi: erc721token.abi}
   }
-  if (box?.contractName === "ERC721Sales") return {
-    ...box, abi: erc721sales.abi
+  if (box?.contractName === "ERC721Sales") {
+    erc721salesAddr = box.contractAddress;
+    return {
+    ...box, abi: erc721sales.abi}
   }
 })
 //lg("out2:", out2, out2.length)
@@ -49,3 +58,6 @@ await Bun.write("./out_abis/contractABIsERC721Sales.json", JSON.stringify(out3))
 const input = Bun.file("./out_abis/contractABIsERC721Sales.json");
 const output = Bun.file(abiDestination); // doesn't exist yet!
 await Bun.write(output, input);
+lg('erc20dp6Addr:', erc20dp6Addr)
+lg('erc721Addr:', erc721Addr)
+lg('erc721salesAddr:', erc721salesAddr)

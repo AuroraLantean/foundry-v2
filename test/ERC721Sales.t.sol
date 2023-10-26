@@ -111,6 +111,9 @@ contract ERC721SalesTest is Test, ERC721Holder {
         assertEq(aNftAf - aNftBf, 1);
         assertEq(cGenAf - cGenBf, priceInWeiToken);
 
+        uint256[] memory out = sales.getBalances();
+        console.log("out:", out[0], out[1], out[2]);
+
         console.log("--------== withdrawERC20");
         (aGenBf, aNftBf, cGenBf, cNftBf) = _balc(tis, "tis", tokenAddr, "SalesCtrt");
         sales.withdrawERC20(tis, usdt.balanceOf(salesAddr));
@@ -136,7 +139,7 @@ contract ERC721SalesTest is Test, ERC721Holder {
         assertEq(aGenAf - aGenBf, priceInWeiEth);
     }
 
-    function testOthers() external {
+    function testOthers() public view {
         console.log("----== testOthers");
         ERC721Sales.Box memory box = sales.getBox();
         console.log("box:", box.num);

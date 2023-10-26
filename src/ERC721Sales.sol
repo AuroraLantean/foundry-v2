@@ -25,13 +25,13 @@ interface IERC721Full is IERC721Enumerable, IERC721Metadata {
 //----------------------==
 
 contract ERC721Sales is Ownable, ERC721Holder, ReentrancyGuard {
-    using SafeERC20 for IERC20;
+    using SafeERC20 for IERC20Metadata;
     using Address for address;
 
     uint256 public priceInWeiETH;
     uint256 public priceInWeiToken;
     IERC721Full public erc721;
-    IERC20 public token;
+    IERC20Metadata public token;
 
     constructor(address _token, address _addrNFT, uint256 _priceInWeiETH, uint256 _priceInWeiToken)
         Ownable(msg.sender)
@@ -39,7 +39,7 @@ contract ERC721Sales is Ownable, ERC721Holder, ReentrancyGuard {
         require(_token != address(0) || _addrNFT != address(0), "should not be zero");
         require(_token.code.length != 0 || _addrNFT.code.length != 0, "should be contracts");
         token = IERC20Metadata(_token);
-        erc721 = IERC721Full(address(_addrNFT));
+        erc721 = IERC721Full(_addrNFT);
         priceInWeiETH = _priceInWeiETH;
         priceInWeiToken = _priceInWeiToken;
     }
@@ -110,17 +110,17 @@ contract ERC721Sales is Ownable, ERC721Holder, ReentrancyGuard {
     }
 
     //---------------==
-    function getBalances() public view returns (uint256[6] memory out) {
+    function getBalances() public view returns (uint256[] memory out) {
         address sender = msg.sender;
         address tis = address(this);
-        out = [
-            sender.balance,
-            token.balanceOf(sender),
-            erc721.balanceOf(sender),
-            tis.balance,
-            token.balanceOf(tis),
-            erc721.balanceOf(tis)
-        ];
+        out = new uint256[](7);
+        out[0] = sender.balance;
+        out[1] = token.balanceOf(sender);
+        out[2] = erc721.balanceOf(sender);
+        out[3] = tis.balance;
+        out[4] = token.balanceOf(tis);
+        out[5] = erc721.balanceOf(tis);
+        out[6] = uint256(token.decimals());
     }
 
     struct Box {
