@@ -135,4 +135,13 @@ contract ERC721SalesTest is Test, ERC721Holder {
         assertEq(cGenAf, 0);
         assertEq(aGenAf - aGenBf, priceInWeiEth);
     }
+
+    function testOthers() external {
+        console.log("----== testOthers");
+        ERC721Sales.Box memory box = sales.getBox();
+        console.log("box:", box.num);
+
+        ERC721Sales.Box[] memory outArray = sales.getBoxArray();
+        console.log("outArray:", outArray[0].num);
+    }
 }

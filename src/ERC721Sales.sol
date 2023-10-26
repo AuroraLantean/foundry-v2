@@ -30,7 +30,7 @@ contract ERC721Sales is Ownable, ERC721Holder, ReentrancyGuard {
 
     uint256 public priceInWeiETH;
     uint256 public priceInWeiToken;
-    IERC721Full public ierc721;
+    IERC721Full public erc721;
     IERC20 public token;
 
     constructor(address _token, address _addrNFT, uint256 _priceInWeiETH, uint256 _priceInWeiToken)
@@ -39,14 +39,14 @@ contract ERC721Sales is Ownable, ERC721Holder, ReentrancyGuard {
         require(_token != address(0) || _addrNFT != address(0), "should not be zero");
         require(_token.code.length != 0 || _addrNFT.code.length != 0, "should be contracts");
         token = IERC20Metadata(_token);
-        ierc721 = IERC721Full(address(_addrNFT));
+        erc721 = IERC721Full(address(_addrNFT));
         priceInWeiETH = _priceInWeiETH;
         priceInWeiToken = _priceInWeiToken;
     }
 
     function setNFT(address _addrNFT) external onlyOwner {
         require(_addrNFT != address(0) && _addrNFT.code.length != 0, "input invalid");
-        ierc721 = IERC721Full(address(_addrNFT));
+        erc721 = IERC721Full(address(_addrNFT));
     }
 
     function setToken(address _token) external onlyOwner {
@@ -65,15 +65,15 @@ contract ERC721Sales is Ownable, ERC721Holder, ReentrancyGuard {
     }
 
     function checkBuying(uint256 _tokenId) public view returns (address owner) {
-        require(ierc721.exists(_tokenId));
-        owner = ierc721.ownerOf(_tokenId);
+        require(erc721.exists(_tokenId));
+        owner = erc721.ownerOf(_tokenId);
         require(msg.sender != address(0) && msg.sender != address(this) && msg.sender != owner, "invalid sender");
     }
 
     function buyNFTviaETH(uint256 _tokenId) external payable {
         (address owner) = checkBuying(_tokenId);
         require(msg.value >= priceInWeiETH, "ETH amount invalid");
-        ierc721.safeTransferFrom(owner, msg.sender, _tokenId);
+        erc721.safeTransferFrom(owner, msg.sender, _tokenId);
         emit BuyNFTViaETH(msg.sender, _tokenId, msg.value, address(this).balance);
     }
 
@@ -82,7 +82,7 @@ contract ERC721Sales is Ownable, ERC721Holder, ReentrancyGuard {
 
         token.safeTransferFrom(msg.sender, address(this), priceInWeiToken);
 
-        ierc721.safeTransferFrom(owner, msg.sender, _tokenId);
+        erc721.safeTransferFrom(owner, msg.sender, _tokenId);
         emit BuyNFTViaERC20(msg.sender, _tokenId, priceInWeiToken, address(this).balance);
     }
 
@@ -104,35 +104,44 @@ contract ERC721Sales is Ownable, ERC721Holder, ReentrancyGuard {
     fallback() external payable {}
 
     receive() external payable {
-        //called when the call data is empty
         if (msg.value > 0) {
             revert();
         }
     }
+
     //---------------==
+    function getBalances() public view returns (uint256[6] memory out) {
+        address sender = msg.sender;
+        address tis = address(this);
+        out = [
+            sender.balance,
+            token.balanceOf(sender),
+            erc721.balanceOf(sender),
+            tis.balance,
+            token.balanceOf(tis),
+            erc721.balanceOf(tis)
+        ];
+    }
+
+    struct Box {
+        uint256 num;
+        address owner;
+    }
+
+    function getBox() public view returns (Box memory box) {
+        box = Box(101, msg.sender);
+    }
+
+    function getBoxArray() public view returns (Box[] memory out) {
+        uint256 arrlength = 3;
+        out = new Box[](arrlength);
+        for (uint256 i = 0; i < arrlength; i++) {
+            out[i] = Box(i, address(this));
+        }
+    }
 
     event WithdrawETH(address indexed payee, uint256 amount, uint256 balance);
     event WithdrawERC20(address indexed payee, uint256 amount, uint256 balance);
     event BuyNFTViaETH(address indexed payer, uint256 indexed tokenId, uint256 amount, uint256 balance);
     event BuyNFTViaERC20(address indexed payer, uint256 indexed tokenId, uint256 amount, uint256 balance);
 }
-/* 
-      ierc721.safeTransferFrom(from, to, tokenId);
-      ierc721.safeTransferFrom(from, to, tokenId, data);
-      ierc721.transferFrom(from, to, tokenId);
-
-    //https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/mocks/ERC721ReceiverMock.sol
-    event Received(address operator, address from, uint256 tokenId, bytes data, uint256 gas);
-
-    function onERC721Received(address operator, address from, uint256 tokenId, bytes calldata data)
-        external
-        returns (bytes4)
-    {
-        require(operator != address(0), "operator invalid");
-        require(tokenId > 0, "tokenId invalid");
-        emit Received(operator, from, tokenId, data, gasleft());
-        //const bytesfour = bytes4(data);
-        //bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))
-        return this.onERC721Received.selector;
-    }
- */

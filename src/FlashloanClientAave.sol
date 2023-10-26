@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.20; //0.8.10 for Aave 1.19.1
+pragma solidity ^0.8.20; //0.8.10 for Aave 1.19.1
 
 import "@aave/core-v3/contracts/flashloan/base/FlashLoanSimpleReceiverBase.sol"; // executeOperation(), ADDRESS_PROVIDER(), POOL()
 import "@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol";

@@ -22,6 +22,7 @@ contract DataLocations {
         Item storage item = items[1];
         // make a struct in memory
         Item memory itemMem = Item(0);
+        console.log(item.foo, itemMem.foo);
     }
 
     function _f(uint256[] storage _arr, mapping(uint256 => address) storage _map, Item storage _item) internal {

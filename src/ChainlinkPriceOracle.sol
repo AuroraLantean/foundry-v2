@@ -18,9 +18,9 @@ contract ChainlinkPriceOracle {
     }
 
     function getLatestPrice() public view returns (int256) {
-        (uint80 roundID, int256 price, uint256 startedAt, uint256 timeStamp, uint80 answeredInRound) =
-            priceFeed.latestRoundData();
+        (, int256 price,,,) = priceFeed.latestRoundData();
         // for ETH / USD price is scaled up by 10 ** 8
         return price / 1e8;
+        //(uint80 roundID, int256 price, uint256 startedAt, uint256 timeStamp, uint80 answeredInRound)
     }
 }
