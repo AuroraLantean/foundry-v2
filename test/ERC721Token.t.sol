@@ -19,10 +19,12 @@ contract ERC721TokenTest is Test {
     uint256 public nftIdMin = 10;
     uint256 public nftIdMax = 19;
     bytes4 public b4;
+    uint256 public minTokenId = 0;
+    uint256 public maxTokenId = 9;
 
     function setUp() public {
         vm.prank(alice);
-        erc721 = new ERC721Token("Dragons", "DRG");
+        erc721 = new ERC721Token("Dragons", "DRG", minTokenId, maxTokenId);
         erc721Addr = address(erc721);
         console.log("erc721Addr:", erc721Addr);
         ctrtOwner = erc721.owner();

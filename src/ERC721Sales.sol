@@ -64,21 +64,24 @@ contract ERC721Sales is Ownable, ERC721Holder, ReentrancyGuard {
         priceInWeiToken = _priceInWeiToken;
     }
 
-    function checkBuying(uint256 _tokenId) public view returns (address owner) {
-        require(erc721.exists(_tokenId));
+    function checkBuying(uint256 _tokenId) public view returns (address owner, bool obool) {
+        bool b1 = erc721.exists(_tokenId);
         owner = erc721.ownerOf(_tokenId);
-        require(msg.sender != address(0) && msg.sender != address(this) && msg.sender != owner, "invalid sender");
+        bool b2 = msg.sender != address(0) && msg.sender != address(this) && msg.sender != owner;
+        obool = b1 && b2;
     }
 
     function buyNFTviaETH(uint256 _tokenId) external payable {
-        (address owner) = checkBuying(_tokenId);
+        (address owner, bool obool) = checkBuying(_tokenId);
+        require(obool, "invalid input");
         require(msg.value >= priceInWeiETH, "ETH amount invalid");
         erc721.safeTransferFrom(owner, msg.sender, _tokenId);
         emit BuyNFTViaETH(msg.sender, _tokenId, msg.value, address(this).balance);
     }
 
     function buyNFTviaERC20(uint256 _tokenId) external {
-        (address owner) = checkBuying(_tokenId);
+        (address owner, bool obool) = checkBuying(_tokenId);
+        require(obool, "invalid input");
 
         token.safeTransferFrom(msg.sender, address(this), priceInWeiToken);
 
@@ -109,6 +112,11 @@ contract ERC721Sales is Ownable, ERC721Holder, ReentrancyGuard {
         }
     }
 
+    event WithdrawETH(address indexed payee, uint256 amount, uint256 balance);
+    event WithdrawERC20(address indexed payee, uint256 amount, uint256 balance);
+    event BuyNFTViaETH(address indexed payer, uint256 indexed tokenId, uint256 amount, uint256 balance);
+    event BuyNFTViaERC20(address indexed payer, uint256 indexed tokenId, uint256 amount, uint256 balance);
+
     //---------------==
     function getBalances() public view returns (uint256[] memory out) {
         address sender = msg.sender;
@@ -116,32 +124,74 @@ contract ERC721Sales is Ownable, ERC721Holder, ReentrancyGuard {
         out = new uint256[](7);
         out[0] = sender.balance;
         out[1] = token.balanceOf(sender);
-        out[2] = erc721.balanceOf(sender);
-        out[3] = tis.balance;
-        out[4] = token.balanceOf(tis);
-        out[5] = erc721.balanceOf(tis);
-        out[6] = uint256(token.decimals());
+        out[2] = uint256(token.decimals());
+        out[3] = erc721.balanceOf(sender);
+        out[4] = tis.balance;
+        out[5] = token.balanceOf(tis);
+        out[6] = erc721.balanceOf(tis);
     }
+}
 
+contract ArrayOfStructs {
     struct Box {
         uint256 num;
         address owner;
     }
 
-    function getBox() public view returns (Box memory box) {
-        box = Box(101, msg.sender);
+    mapping(uint256 => Box) public boxes;
+
+    constructor(uint256 num) {
+        address owner = msg.sender;
+        boxes[0] = Box(num, owner);
+        boxes[1] = Box(num + 1, owner);
+        boxes[2] = Box(num + 2, owner);
     }
 
-    function getBoxArray() public view returns (Box[] memory out) {
-        uint256 arrlength = 3;
+    function addBox(uint256 id, uint256 num, address owner) public returns (bool) {
+        boxes[id] = Box(num, owner);
+        return true;
+    }
+
+    function getBox(uint256 id) public view returns (Box memory) {
+        return boxes[id];
+    }
+
+    function getBox2(uint256 id) public view returns (Box memory box) {
+        box = boxes[id];
+    }
+
+    function getTuple() public pure returns (string memory, uint8, uint256) {
+        return ("string", type(uint8).max, type(uint256).max);
+    }
+
+    function getBoxes(uint256 min, uint256 max) public view returns (Box[] memory) {
+        uint256 arrlength = max - min + 1;
+        Box[] memory out = new Box[](arrlength);
+        for (uint256 i = min; i < arrlength; i++) {
+            out[i] = boxes[i];
+        }
+        return out;
+    }
+
+    function getBoxes2(uint256 min, uint256 max) public view returns (Box[] memory out) {
+        uint256 arrlength = max - min + 1;
         out = new Box[](arrlength);
         for (uint256 i = 0; i < arrlength; i++) {
-            out[i] = Box(i, address(this));
+            out[i] = boxes[i];
         }
     }
 
-    event WithdrawETH(address indexed payee, uint256 amount, uint256 balance);
-    event WithdrawERC20(address indexed payee, uint256 amount, uint256 balance);
-    event BuyNFTViaETH(address indexed payer, uint256 indexed tokenId, uint256 amount, uint256 balance);
-    event BuyNFTViaERC20(address indexed payer, uint256 indexed tokenId, uint256 amount, uint256 balance);
+    function getBalances(address _token) public view returns (uint256[] memory out) {
+        address sender = msg.sender;
+        IERC20Metadata token = IERC20Metadata(_token);
+        //address tis = address(this);
+        out = new uint256[](7);
+        out[0] = sender.balance;
+        out[1] = token.balanceOf(sender);
+        out[2] = uint256(token.decimals());
+        out[3] = 10; //erc721.balanceOf(sender);
+        out[4] = 0; //tis.balance;
+        out[5] = 0; //token.balanceOf(tis);
+        out[6] = 0; //erc721.balanceOf(tis);
+    }
 }

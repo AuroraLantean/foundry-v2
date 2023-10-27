@@ -14,10 +14,11 @@ import "forge-std/console.sol";
 contract ERC721Token is Ownable, ERC721Burnable, ERC721Enumerable, ERC721URIStorage {
     string private _baseTokenURI;
 
-    //constructor() ERC721("Dragons", "DRG") {}
-    constructor(string memory name, string memory symbol) Ownable(msg.sender) ERC721(name, symbol) {
-        // Mint tokens 0 ~ 9 to msg.sender
-        safeMintBatch(msg.sender, 0, 9);
+    constructor(string memory name, string memory symbol, uint256 minTokenId, uint256 maxTokenId)
+        Ownable(msg.sender)
+        ERC721(name, symbol)
+    {
+        safeMintBatch(msg.sender, minTokenId, maxTokenId);
     }
 
     function safeMint(address to, uint256 tokenId) public onlyOwner {
@@ -46,6 +47,22 @@ contract ERC721Token is Ownable, ERC721Burnable, ERC721Enumerable, ERC721URIStor
             if (exists(tokenId)) {
                 safeTransferFrom(from, to, tokenId, "");
             }
+        }
+    }
+
+    function ownerOfBatch(uint256 minTokenId, uint256 maxTokenId) public view returns (address[] memory addrs) {
+        uint256 arrlength = maxTokenId - minTokenId + 1;
+        addrs = new address[](arrlength);
+        for (uint256 tokenId = minTokenId; tokenId <= maxTokenId; tokenId++) {
+            addrs[tokenId] = _ownerOf(tokenId);
+        }
+    }
+
+    function getApprovedBatch(uint256 minTokenId, uint256 maxTokenId) public view returns (address[] memory addrs) {
+        uint256 arrlength = maxTokenId - minTokenId + 1;
+        addrs = new address[](arrlength);
+        for (uint256 tokenId = minTokenId; tokenId <= maxTokenId; tokenId++) {
+            addrs[tokenId] = getApproved(tokenId);
         }
     }
 

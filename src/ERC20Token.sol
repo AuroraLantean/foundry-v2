@@ -21,10 +21,10 @@ contract ERC20Token is Ownable, ERC20, ERC20Burnable {
         _mint(owner(), amountInDp * 10 ** uint256(decimals()));
     }
 
-    function mint(address user, uint256 amount) public onlyOwner returns (bool) {
+    function mint(address user, uint256 amount) public returns (bool) {
         _mint(user, amount);
         return true;
-    }
+    } //onlyOwner is only for production
 
     function getData(address target) public view returns (string memory, uint8, uint256) {
         return (symbol(), decimals(), balanceOf(target));

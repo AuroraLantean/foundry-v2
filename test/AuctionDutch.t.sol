@@ -39,8 +39,10 @@ contract AuctionDutchTest is Test {
         deal(alice, 1000 ether);
         deal(bob, 1000 ether);
 
+        uint256 minTokenId = 0;
+        uint256 maxTokenId = 9;
         vm.prank(alice);
-        erc721 = new ERC721Token("Dragons", "DRG");
+        erc721 = new ERC721Token("Dragons", "DRG", minTokenId, maxTokenId);
         erc721Addr = address(erc721);
 
         nftId = 7;

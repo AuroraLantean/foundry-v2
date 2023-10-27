@@ -16,6 +16,7 @@ contract ERC721SalesTest is Test, ERC721Holder {
     ERC721Token public dragons;
     ERC20DP6 public usdt;
     ERC20Token public token0;
+    ArrayOfStructs public ctrt;
     address public owner;
     address public salesAddr;
     address public tokenAddr;
@@ -31,7 +32,8 @@ contract ERC721SalesTest is Test, ERC721Holder {
     uint256 public priceInWeiEth = 1e15;
     uint256 public tokenDp = 1e6;
     uint256 public priceInWeiToken = 100 * tokenDp;
-    //uint256 public feeAmount;
+    uint256 public minTokenId = 0;
+    uint256 public maxTokenId = 9;
     //IWETH_dup public weth;
 
     receive() external payable {
@@ -50,7 +52,7 @@ contract ERC721SalesTest is Test, ERC721Holder {
 
         //USDT, USDC use 6 dp !!! But DAI has 18!!
         usdt = new ERC20DP6("TetherUSD", "USDT");
-        dragons = new ERC721Token("DragonsNFT", "DRAG");
+        dragons = new ERC721Token("DragonsNFT", "DRAG", minTokenId, maxTokenId);
         usdt.mint(alice, 1000e6);
         aGenBf = usdt.balanceOf(alice);
         console.log("Alice USDT:", aGenBf);
@@ -139,12 +141,34 @@ contract ERC721SalesTest is Test, ERC721Holder {
         assertEq(aGenAf - aGenBf, priceInWeiEth);
     }
 
-    function testOthers() public view {
-        console.log("----== testOthers");
-        ERC721Sales.Box memory box = sales.getBox();
-        console.log("box:", box.num);
+    function testOthers() public {
+        console.log("----== ArrayOfStructs");
+        ctrt = new ArrayOfStructs(100);
 
-        ERC721Sales.Box[] memory outArray = sales.getBoxArray();
-        console.log("outArray:", outArray[0].num);
+        uint256 id = 0;
+        ArrayOfStructs.Box memory box;
+        box = ctrt.getBox(id);
+        console.log("getBox:", id, box.num, box.owner);
+        box = ctrt.getBox2(id);
+        console.log("getBox2:", id, box.num, box.owner);
+
+        id = 3;
+        bool oBool = ctrt.addBox(id, 100 + id, tis);
+        console.log("oBool:", oBool);
+        box = ctrt.getBox(id);
+        console.log("getBox:", id, box.num, box.owner);
+
+        ArrayOfStructs.Box[] memory boxes;
+        boxes = ctrt.getBoxes(0, 3);
+        console.log("getBoxes. out length:", boxes.length);
+        console.log(boxes[0].num, boxes[1].num, boxes[2].num, boxes[3].num);
+
+        boxes = ctrt.getBoxes2(0, 3);
+        console.log("getBoxes. out length:", boxes.length);
+        console.log(boxes[0].num, boxes[1].num, boxes[2].num, boxes[3].num);
+
+        uint256[] memory uints;
+        uints = ctrt.getBalances(tokenAddr);
+        console.log("getBalances:", uints[0], uints[1], uints[2]);
     }
 }

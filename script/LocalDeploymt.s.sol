@@ -21,14 +21,12 @@ import "src/ERC721Token.sol";
 import "src/ERC721Sales.sol";
 
 contract AnvilDeploymtScript is Script {
-    address public tis = address(this);
+    //address public tis = address(this);
     address public usdtAddr;
     address public dragonsAddr;
     uint256 public choice;
-    string public url;
     uint256 public zGenBf;
     uint256 public zGenAf;
-    uint256 public nftBalc;
     /**
      * For Arbitrum, convert some ETH into Arbitrum ETH:
      * https://bridge.arbitrum.io/?l2ChainId=421613
@@ -39,15 +37,17 @@ contract AnvilDeploymtScript is Script {
 
     //default function to run in scripts
     function run() public {
-        uint256 privateKey = vm.envUint("ANVIL4_PRIVATE_KEY");
-        address deployer = vm.rememberKey(privateKey);
-        uint256 privateKey1 = vm.envUint("ANVIL1_PRIVATE_KEY");
-        address anvil1 = vm.rememberKey(privateKey1);
-        //vm.envAddress("ANVIL4");
-        vm.startBroadcast(privateKey);
+        //your deployer's private key
+        uint256 pkey4 = vm.envUint("ANVIL4_PRIVATE_KEY");
+        address deployer = vm.rememberKey(pkey4);
+        address anvil1 = vm.rememberKey(vm.envUint("ANVIL1_PRIVATE_KEY"));
+        vm.startBroadcast(pkey4);
         //vm.broadcast();
-        choice = 4;
+        choice = 5;
         console.log("choice:", choice);
+        uint256 minTokenId = 0;
+        uint256 maxTokenId = 9;
+
         if (choice == 0) {
             console.log("do nothing");
             //console2_log(p0, p1);
@@ -57,7 +57,7 @@ contract AnvilDeploymtScript is Script {
             zGenBf = goldtoken.balanceOf(deployer);
             console.log("deployer GoldCoin balc:", zGenBf, zGenBf / 1e18);
         } else if (choice == 2) {
-            ERC721Token dragons = new ERC721Token("DragonsNFT", "DRAG");
+            ERC721Token dragons = new ERC721Token("DragonsNFT", "DRAG", minTokenId, maxTokenId);
             dragonsAddr = address(dragons);
             zGenBf = dragons.balanceOf(deployer);
             console.log("deployer NFT balc:", zGenBf);
@@ -68,6 +68,14 @@ contract AnvilDeploymtScript is Script {
             zGenBf = usdt.balanceOf(deployer);
             console.log("deployer USDT balc:", zGenBf, zGenBf / 1e6);
         } else if (choice == 4) {
+            ArrayOfStructs ctrt = new ArrayOfStructs(100);
+            address ctrtAddr = address(ctrt);
+            console.log("arrayOfStructsJSON addr:", ctrtAddr);
+        } else if (choice == 5) {
+            ArrayOfStructs ctrt = new ArrayOfStructs(100);
+            address ctrtAddr = address(ctrt);
+            console.log("arrayOfStructsJSON addr:", ctrtAddr);
+
             zGenBf = deployer.balance;
             console.log("deployer:", deployer);
             console.log("deployer ETH balc:", zGenBf, zGenBf / 1e18);
@@ -83,30 +91,38 @@ contract AnvilDeploymtScript is Script {
             zGenBf = usdt.balanceOf(anvil1);
             console.log("anvil1 USDT balc:", zGenBf, zGenBf / 1e6);
 
-            ERC721Token dragons = new ERC721Token("DragonsNFT", "DRAG");
+            ERC721Token dragons = new ERC721Token("DragonsNFT", "DRAG", minTokenId, maxTokenId);
             dragonsAddr = address(dragons);
             console.log("DragonsNFT addr:", dragonsAddr);
             zGenBf = dragons.balanceOf(deployer);
             console.log("deployer NFT balc:", zGenBf);
 
-            uint256 priceInWeiEth = 1e15;
-            uint256 tokenDp = 1e6;
-            uint256 priceInWeiToken = 100 * tokenDp;
-            //ERC721Sales _sales =
-            ERC721Sales sales = new ERC721Sales(usdtAddr, dragonsAddr, priceInWeiEth, priceInWeiToken);
+            //uint256 priceInWeiEth = 1e15;
+            //uint256 tokenDp = 1e6;
+            //uint256 priceInWeiToken = 100 * 1e6;
+
+            ERC721Sales sales = new ERC721Sales(usdtAddr, dragonsAddr, 1e15, 100 * 1e6);
             address salesAddr = address(sales);
             console.log("Sales addr:", salesAddr);
 
-            dragons.safeApproveBatch(salesAddr, 0, 9);
-            for (uint256 i = 0; i <= 9; i++) {
-                address approvedOptr = dragons.getApproved(i);
-                console.log("approved operator: ", approvedOptr);
+            uint256[] memory out = sales.getBalances();
+            console.log("getBalances() from deployer:", out[0], out[1], out[2]);
+            /* 0: uint256[]: out 9999975238569100584676,9000000000000000,10,0,0,0,6 */
+
+            dragons.safeApproveBatch(salesAddr, minTokenId, maxTokenId);
+
+            address[] memory nftOwners = dragons.ownerOfBatch(minTokenId, maxTokenId);
+
+            address[] memory approvedAddrs = dragons.getApprovedBatch(minTokenId, maxTokenId);
+
+            for (uint256 i = minTokenId; i <= maxTokenId; i++) {
+                console.log("id = %s, is salesCtrt approved: %s", i, salesAddr == approvedAddrs[i]);
+                console.log("is Owner == Deployer: %s", nftOwners[i] == deployer);
             }
-            //dragons.safeTransferFromBatch(deployer, salesAddr, 0, 9);
+
             //nftBalc = dragons.balanceOf(tis);
             //console.log("tis nftBalc:", nftBalc);
             console.log("deployer:", deployer);
-
             console.log("USDT_ADDR=", usdtAddr);
             console.log("DRAGONS_ADDR=", dragonsAddr);
             console.log("SALES_ADDR=", salesAddr);
