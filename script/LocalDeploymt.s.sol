@@ -72,10 +72,6 @@ contract AnvilDeploymtScript is Script {
             address ctrtAddr = address(ctrt);
             console.log("arrayOfStructsJSON addr:", ctrtAddr);
         } else if (choice == 5) {
-            ArrayOfStructs ctrt = new ArrayOfStructs(100);
-            address ctrtAddr = address(ctrt);
-            console.log("arrayOfStructsJSON addr:", ctrtAddr);
-
             zGenBf = deployer.balance;
             console.log("deployer:", deployer);
             console.log("deployer ETH balc:", zGenBf, zGenBf / 1e18);
@@ -126,6 +122,10 @@ contract AnvilDeploymtScript is Script {
             console.log("USDT_ADDR=", usdtAddr);
             console.log("DRAGONS_ADDR=", dragonsAddr);
             console.log("SALES_ADDR=", salesAddr);
+
+            ArrayOfStructs ctrt = new ArrayOfStructs(100);
+            address ctrtAddr = address(ctrt);
+            console.log("arrayOfStructsJSON addr:", ctrtAddr);
         }
         vm.stopBroadcast();
     }
