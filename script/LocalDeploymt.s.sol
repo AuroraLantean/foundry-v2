@@ -101,7 +101,7 @@ contract AnvilDeploymtScript is Script {
             address salesAddr = address(sales);
             console.log("Sales addr:", salesAddr);
 
-            uint256[] memory out = sales.getBalances();
+            uint256[] memory out = sales.getBalances(usdtAddr, dragonsAddr);
             console.log("getBalances() from deployer:", out[0], out[1], out[2]);
             /* 0: uint256[]: out 9999975238569100584676,9000000000000000,10,0,0,0,6 */
 
@@ -124,8 +124,7 @@ contract AnvilDeploymtScript is Script {
             console.log("SALES_ADDR=", salesAddr);
 
             ArrayOfStructs ctrt = new ArrayOfStructs(100);
-            address ctrtAddr = address(ctrt);
-            console.log("arrayOfStructsJSON addr:", ctrtAddr);
+            console.log("arrayOfStructsJSON addr:", address(ctrt));
         }
         vm.stopBroadcast();
     }

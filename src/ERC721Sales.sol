@@ -118,7 +118,25 @@ contract ERC721Sales is Ownable, ERC721Holder, ReentrancyGuard {
     event BuyNFTViaERC20(address indexed payer, uint256 indexed tokenId, uint256 amount, uint256 balance);
 
     //---------------==
-    function getBalances() public view returns (uint256[] memory out) {
+    function getData() public view returns (uint256, uint256, address, address) {
+        return (priceInWeiETH, priceInWeiToken, address(erc721), address(token));
+    }
+
+    function getBalances(address _token, address _addrNFT) public view returns (uint256[] memory out) {
+        address sender = msg.sender;
+        IERC20Metadata token1 = IERC20Metadata(_token);
+        IERC721Full erc721c = IERC721Full(_addrNFT);
+        address tis = address(this);
+        out = new uint256[](7);
+        out[0] = sender.balance;
+        out[1] = token1.balanceOf(sender);
+        out[2] = uint256(token1.decimals());
+        out[3] = erc721c.balanceOf(sender);
+        out[4] = tis.balance;
+        out[5] = token1.balanceOf(tis);
+        out[6] = erc721c.balanceOf(tis);
+    }
+    /*     function getBalances() public view returns (uint256[] memory out) {
         address sender = msg.sender;
         address tis = address(this);
         out = new uint256[](7);
@@ -129,7 +147,7 @@ contract ERC721Sales is Ownable, ERC721Holder, ReentrancyGuard {
         out[4] = tis.balance;
         out[5] = token.balanceOf(tis);
         out[6] = erc721.balanceOf(tis);
-    }
+    } */
 }
 
 contract ArrayOfStructs {
@@ -181,17 +199,18 @@ contract ArrayOfStructs {
         }
     }
 
-    function getBalances(address _token) public view returns (uint256[] memory out) {
+    function getBalances(address _token, address _addrNFT) public view returns (uint256[] memory out) {
         address sender = msg.sender;
         IERC20Metadata token = IERC20Metadata(_token);
-        //address tis = address(this);
+        IERC721Full erc721 = IERC721Full(_addrNFT);
+        address tis = address(this);
         out = new uint256[](7);
         out[0] = sender.balance;
         out[1] = token.balanceOf(sender);
         out[2] = uint256(token.decimals());
-        out[3] = 10; //erc721.balanceOf(sender);
-        out[4] = 0; //tis.balance;
-        out[5] = 0; //token.balanceOf(tis);
-        out[6] = 0; //erc721.balanceOf(tis);
+        out[3] = erc721.balanceOf(sender);
+        out[4] = tis.balance;
+        out[5] = token.balanceOf(tis);
+        out[6] = erc721.balanceOf(tis);
     }
-}
+} //ArrayOfStructs

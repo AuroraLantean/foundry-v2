@@ -113,7 +113,7 @@ contract ERC721SalesTest is Test, ERC721Holder {
         assertEq(aNftAf - aNftBf, 1);
         assertEq(cGenAf - cGenBf, priceInWeiToken);
 
-        uint256[] memory out = sales.getBalances();
+        uint256[] memory out = sales.getBalances(tokenAddr, address(dragons));
         console.log("out:", out[0], out[1], out[2]);
 
         console.log("--------== withdrawERC20");
@@ -168,7 +168,9 @@ contract ERC721SalesTest is Test, ERC721Holder {
         console.log(boxes[0].num, boxes[1].num, boxes[2].num, boxes[3].num);
 
         uint256[] memory uints;
-        uints = ctrt.getBalances(tokenAddr);
-        console.log("getBalances:", uints[0], uints[1], uints[2]);
+        uints = ctrt.getBalances(tokenAddr, address(dragons));
+        console.log("getBalances:");
+        console.log(uints[0], uints[1], uints[2], uints[3]);
+        console.log(uints[4], uints[5], uints[6]);
     }
 }
