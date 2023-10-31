@@ -5,6 +5,7 @@ import "forge-std/Test.sol";
 import "src/ERC20Token.sol";
 import "src/ERC721Token.sol";
 import "src/ERC721Sales.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract ERC721SalesTest is Test, ERC721Holder {
     address public zero = address(0);
@@ -55,11 +56,14 @@ contract ERC721SalesTest is Test, ERC721Holder {
         dragons = new ERC721Token("DragonsNFT", "DRAG", minTokenId, maxTokenId);
         usdt.mint(alice, 1000e6);
         aGenBf = usdt.balanceOf(alice);
-        console.log("Alice USDT:", aGenBf);
+        console.log("Alice USDT:", aGenBf / 1e6, aGenBf);
         assertEq(aGenBf, 1000e6);
         tokenAddr = address(usdt);
         sales = new ERC721Sales(tokenAddr, address(dragons), priceInWeiEth, priceInWeiToken);
         salesAddr = address(sales);
+
+        aNftBf = dragons.balanceOf(tis);
+        console.log("aNftBf tis:", aNftBf);
     }
 
     function _balc(address user, string memory userName, address tokenCtrt, string memory nameTheOther)
@@ -97,10 +101,6 @@ contract ERC721SalesTest is Test, ERC721Holder {
             //console.log("approved operator: ", approvedOptr);
             assertEq(approvedOptr, salesAddr);
         }
-        /*dragons.safeTransferFromBatch(tis, salesAddr, 0, 9);
-        aNft = dragons.balanceOf(salesAddr);
-        console.log("aNft:", aNft);
-        assertEq(aNft, 10); */
 
         console.log("--------== buyNFTviaERC20");
         (aGenBf, aNftBf, cGenBf, cNftBf) = _balc(alice, "Alice", tokenAddr, "SalesCtrt");
@@ -141,7 +141,79 @@ contract ERC721SalesTest is Test, ERC721Holder {
         assertEq(aGenAf - aGenBf, priceInWeiEth);
     }
 
-    function testOthers() public {
+    function testWithdrawNFT() external {
+        console.log("----== testWithdrawNFT");
+        dragons.safeTransferFromBatch(tis, salesAddr, 0, 9);
+        aNftBf = dragons.balanceOf(salesAddr);
+        console.log("aNftBf salesAddr:", aNftBf);
+        assertEq(aNftBf, 10);
+
+        aNftBf = dragons.balanceOf(tis);
+        console.log("aNftBf tis:", aNftBf);
+        assertEq(aNftBf, 0);
+
+        sales.withdrawNFT(tis, 0, 9);
+        aNftBf = dragons.balanceOf(salesAddr);
+        console.log("aNftBf salesAddr:", aNftBf);
+        assertEq(aNftBf, 0);
+
+        aNftBf = dragons.balanceOf(tis);
+        console.log("aNftBf tis:", aNftBf);
+        assertEq(aNftBf, 10);
+    }
+
+    function testSellNFTviaETH() external {
+        console.log("----== testSellNFTviaETH");
+        aNftBf = dragons.balanceOf(tis);
+        console.log("aNftBf tis:", aNftBf);
+        assertEq(aNftBf, 10);
+        console.log("tis ETH: %s", tis.balance / 1e18);
+
+        deal(salesAddr, 1000 ether);
+        console.log("SalesCtrt ETH: %s", salesAddr.balance / 1e18, salesAddr.balance);
+
+        dragons.approve(salesAddr, 0);
+        sales.sellNFTviaETH(0);
+        console.log("tis ETH: %s", tis.balance / 1e18);
+        console.log("SalesCtrt ETH: %s", salesAddr.balance / 1e18, salesAddr.balance);
+
+        //Custom Error
+        bytes4 errorSignature = 0xcd786059;
+        bytes4 desiredSelector = bytes4(keccak256(bytes("AddressInsufficientBalance(address)")));
+        console.log(errorSignature == desiredSelector);
+    }
+
+    function testSellNFTviaERC20() external {
+        console.log("----== testSellNFTviaERC20");
+        aNftBf = dragons.balanceOf(salesAddr);
+        console.log("aNftBf SalesCtrt:", aNftBf);
+
+        aGenBf = usdt.balanceOf(salesAddr);
+        console.log("SalesCtrt USDT: %s", aGenBf / 1e6);
+        amount = 1000;
+        usdt.transfer(salesAddr, amount * 1e6);
+        aGenAf = usdt.balanceOf(salesAddr);
+        console.log("SalesCtrt USDT: %s", aGenAf / 1e6);
+
+        aGenBf = usdt.balanceOf(tis);
+        console.log("tis USDT: %s", aGenBf / 1e6);
+
+        dragons.approve(salesAddr, 0);
+        console.log("after approve()");
+        uint256 nftPriceUSDT = sales.priceInWeiToken();
+        console.log("nftPriceToken:", nftPriceUSDT / 1e6);
+        sales.sellNFTviaERC20(0);
+
+        aGenBf = usdt.balanceOf(tis);
+        console.log("tis USDT: %s", aGenBf / 1e6);
+        aGenAf = usdt.balanceOf(salesAddr);
+        console.log("SalesCtrt USDT: %s", aGenAf / 1e6);
+
+        aNftAf = dragons.balanceOf(salesAddr);
+        console.log("aNftAf SalesCtrt:", aNftAf);
+    }
+
+    function testArrayOfStructs() public {
         console.log("----== ArrayOfStructs");
         ctrt = new ArrayOfStructs(100);
 

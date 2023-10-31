@@ -14,8 +14,10 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol"; //includes IERC721, which includes IERC165.sol
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol"; // includes IERC721
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol"; //includes IERC721Receiver
+
 //import "@openzeppelin/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 import "forge-std/console.sol";
 
 //------------------------------==
@@ -27,6 +29,7 @@ interface IERC721Full is IERC721Enumerable, IERC721Metadata {
 contract ERC721Sales is Ownable, ERC721Holder, ReentrancyGuard {
     using SafeERC20 for IERC20Metadata;
     using Address for address;
+    using Math for uint256;
 
     uint256 public priceInWeiETH;
     uint256 public priceInWeiToken;
@@ -67,26 +70,59 @@ contract ERC721Sales is Ownable, ERC721Holder, ReentrancyGuard {
     function checkBuying(uint256 _tokenId) public view returns (address owner, bool obool) {
         bool b1 = erc721.exists(_tokenId);
         owner = erc721.ownerOf(_tokenId);
-        bool b2 = msg.sender != address(0) && msg.sender != address(this) && msg.sender != owner;
+        bool b2 = msg.sender != address(0) && msg.sender != address(this);
         obool = b1 && b2;
     }
 
     function buyNFTviaETH(uint256 _tokenId) external payable {
         (address owner, bool obool) = checkBuying(_tokenId);
-        require(obool, "invalid input");
+        require(obool && msg.sender != owner, "invalid input");
         require(msg.value >= priceInWeiETH, "ETH amount invalid");
         erc721.safeTransferFrom(owner, msg.sender, _tokenId);
         emit BuyNFTViaETH(msg.sender, _tokenId, msg.value, address(this).balance);
     }
 
+    function withdrawNFT(address _to, uint256 minTokenId, uint256 maxTokenId) external onlyOwner {
+        require(_to != address(0) && _to != address(this), "to address invalid");
+        require(msg.sender != address(0) && msg.sender != address(this), "sender invalid");
+
+        for (uint256 tokenId = minTokenId; tokenId <= maxTokenId; tokenId++) {
+            address owner = erc721.ownerOf(tokenId);
+            if (erc721.exists(tokenId) && owner == address(this)) {
+                erc721.safeTransferFrom(address(this), _to, tokenId, "");
+            }
+        }
+        emit WithdrawNFT(_to, minTokenId, maxTokenId);
+    }
+
     function buyNFTviaERC20(uint256 _tokenId) external {
         (address owner, bool obool) = checkBuying(_tokenId);
-        require(obool, "invalid input");
+        require(obool && msg.sender != owner, "invalid input");
 
         token.safeTransferFrom(msg.sender, address(this), priceInWeiToken);
 
         erc721.safeTransferFrom(owner, msg.sender, _tokenId);
         emit BuyNFTViaERC20(msg.sender, _tokenId, priceInWeiToken, address(this).balance);
+    }
+
+    function sellNFTviaETH(uint256 _tokenId) external nonReentrant {
+        (address owner, bool obool) = checkBuying(_tokenId);
+        require(obool && msg.sender == owner, "invalid input");
+        erc721.safeTransferFrom(msg.sender, address(this), _tokenId);
+
+        uint256 value = priceInWeiETH.mulDiv(9, 10);
+        Address.sendValue(payable(msg.sender), value); // also check this ctrt ETH balance >= amount
+        emit SellNFTViaETH(payable(msg.sender), _tokenId, value, address(this).balance);
+    }
+
+    function sellNFTviaERC20(uint256 _tokenId) external {
+        (address owner, bool obool) = checkBuying(_tokenId);
+        require(obool && msg.sender == owner, "invalid input");
+        erc721.safeTransferFrom(msg.sender, address(this), _tokenId);
+        uint256 amount = priceInWeiToken.mulDiv(9, 10);
+        token.safeTransfer(msg.sender, amount);
+
+        emit SellNFTViaERC20(msg.sender, _tokenId, amount, address(this).balance);
     }
 
     function withdrawETH(address payable _to, uint256 _amount) external onlyOwner nonReentrant {
@@ -115,7 +151,10 @@ contract ERC721Sales is Ownable, ERC721Holder, ReentrancyGuard {
     event WithdrawETH(address indexed payee, uint256 amount, uint256 balance);
     event WithdrawERC20(address indexed payee, uint256 amount, uint256 balance);
     event BuyNFTViaETH(address indexed payer, uint256 indexed tokenId, uint256 amount, uint256 balance);
+    event SellNFTViaETH(address payable indexed seller, uint256 indexed tokenId, uint256 amount, uint256 balance);
+    event WithdrawNFT(address indexed to, uint256 indexed minTokenId, uint256 maxTokenId);
     event BuyNFTViaERC20(address indexed payer, uint256 indexed tokenId, uint256 amount, uint256 balance);
+    event SellNFTViaERC20(address indexed seller, uint256 indexed tokenId, uint256 amount, uint256 balance);
 
     //---------------==
     function getData() public view returns (uint256, uint256, address, address) {
