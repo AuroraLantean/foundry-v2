@@ -51,8 +51,8 @@ contract RemoteDeploymtScript is Script {
         //vm.broadcast();
         choice = 3;
         console.log("choice:", choice);
-        uint256 minTokenId = 0;
-        uint256 maxTokenId = 9;
+        uint256 minNftId = 0;
+        uint256 maxNftId = 9;
         if (choice == 0) {
             console.log("do nothing");
             //console2_log(p0, p1);
@@ -62,7 +62,7 @@ contract RemoteDeploymtScript is Script {
             balcTokB4 = goldtoken.balanceOf(alice);
             console.log("alice GoldCoin balc:", balcTokB4, balcTokB4 / 1e18);
         } else if (choice == 2) {
-            ERC721Token dragons = new ERC721Token("DragonsNFT", "DRAG", minTokenId, maxTokenId);
+            ERC721Token dragons = new ERC721Token("DragonsNFT", "DRAG", minNftId, maxNftId);
             balcTokB4 = dragons.balanceOf(alice);
             console.log("alice NFT balc:", balcTokB4);
         } else if (choice == 3) {
@@ -82,7 +82,7 @@ contract RemoteDeploymtScript is Script {
             console.log("Sales addr:", salesAddr);
 
             ERC721Token dragons = ERC721Token(dragonsAddr);
-            dragons.safeTransferFromBatch(alice, salesAddr, minTokenId, maxTokenId);
+            dragons.safeTransferFromBatch(alice, salesAddr, minNftId, maxNftId);
             nftBalc = dragons.balanceOf(salesAddr);
             console.log("Sales nftBalc:", nftBalc);
         }

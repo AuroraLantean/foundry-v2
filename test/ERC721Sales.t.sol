@@ -34,8 +34,9 @@ contract ERC721SalesTest is Test, ERC721Holder {
     uint256 public priceInWeiEth = 1e15;
     uint256 public tokenDp = 1e6;
     uint256 public priceInWeiToken = 100 * tokenDp;
-    uint256 public minTokenId = 0;
-    uint256 public maxTokenId = 9;
+    uint256 public minNftId = 0;
+    uint256 public maxNftId = 9;
+    uint256[] public uints;
     //IWETH_dup public weth;
 
     receive() external payable {
@@ -54,7 +55,7 @@ contract ERC721SalesTest is Test, ERC721Holder {
 
         //USDT, USDC use 6 dp !!! But DAI has 18!!
         usdt = new ERC20DP6("TetherUSD", "USDT");
-        dragons = new ERC721Token("DragonsNFT", "DRAG", minTokenId, maxTokenId);
+        dragons = new ERC721Token("DragonsNFT", "DRAG", minNftId, maxNftId);
         nftAddr = address(dragons);
         usdt.mint(alice, 1000e6);
         aGenBf = usdt.balanceOf(alice);
@@ -106,7 +107,9 @@ contract ERC721SalesTest is Test, ERC721Holder {
 
         console.log("--------== buyNFTviaERC20");
         (aGenBf, aNftBf, cGenBf, cNftBf) = _balc(alice, "Alice", tokenAddr, "SalesCtrt");
-        sales.setPriceInWeiToken(nftAddr, 0, priceInWeiToken);
+        uints.push(priceInWeiToken);
+        //new uint256[](priceInWeiToken)
+        sales.setPriceBatch(nftAddr, 0, 0, false, uints);
         vm.startPrank(alice);
         usdt.approve(salesAddr, priceInWeiToken);
         sales.buyNFTviaERC20(nftAddr, 0);
@@ -127,7 +130,9 @@ contract ERC721SalesTest is Test, ERC721Holder {
 
         console.log("--------== BuyNFTviaETH");
         (aGenBf, aNftBf, cGenBf, cNftBf) = _balc(alice, "Alice", zero, "SalesCtrt");
-        sales.setPriceInWeiETH(nftAddr, 1, priceInWeiEth);
+        uints.pop();
+        uints.push(priceInWeiEth);
+        sales.setPriceBatch(nftAddr, 1, 1, true, uints);
         vm.startPrank(alice);
         sales.buyNFTviaETH{value: priceInWeiEth}(nftAddr, 1);
         vm.stopPrank();
@@ -217,6 +222,21 @@ contract ERC721SalesTest is Test, ERC721Holder {
         console.log("aNftAf SalesCtrt:", aNftAf);
     }
 
+    function testSetPriceBatch() public {
+        console.log("----== testSetPriceBatch");
+        for (uint256 i = minNftId; i <= maxNftId; i++) {
+            uints.push((1 + i) * 1e15);
+            sales.setPriceBatch(nftAddr, i, i, true, uints);
+            uints.pop();
+            uints.push((100 + i) * 1e6);
+            sales.setPriceBatch(nftAddr, i, i, false, uints);
+            uints.pop();
+            (uint256 priceEth, uint256 priceTok) = sales.prices(nftAddr, i);
+            console.log(priceEth, priceTok);
+            //1000000000000000 100000000
+        }
+    }
+
     function testArrayOfStructs() public {
         console.log("----== ArrayOfStructs");
         ctrt = new ArrayOfStructs(100);
@@ -243,10 +263,10 @@ contract ERC721SalesTest is Test, ERC721Holder {
         console.log("getBoxes. out length:", boxes.length);
         console.log(boxes[0].num, boxes[1].num, boxes[2].num, boxes[3].num);
 
-        uint256[] memory uints;
-        uints = ctrt.getBalances(tokenAddr, nftAddr);
+        uint256[] memory uintsO;
+        uintsO = ctrt.getBalances(tokenAddr, nftAddr);
         console.log("getBalances:");
-        console.log(uints[0], uints[1], uints[2], uints[3]);
-        console.log(uints[4], uints[5], uints[6]);
+        console.log(uintsO[0], uintsO[1], uintsO[2], uintsO[3]);
+        console.log(uintsO[4], uintsO[5], uintsO[6]);
     }
 }

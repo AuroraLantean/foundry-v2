@@ -51,14 +51,22 @@ contract ERC721Sales is Ownable, ERC721Holder, ReentrancyGuard {
         token = IERC20Metadata(erc20Addr);
     }
 
-    function setPriceInWeiETH(address nftAddr, uint256 nftId, uint256 priceInWeiEth) external onlyOwner {
-        require(priceInWeiEth > 0, "input invalid");
-        prices[nftAddr][nftId].priceInWeiEth = priceInWeiEth;
-    }
+    function setPriceBatch(address nftAddr, uint256 minNftId, uint256 maxNftId, bool isETH, uint256[] memory priceArray)
+        external
+        onlyOwner
+    {
+        require(maxNftId - minNftId + 1 == priceArray.length, "priceArray length invalid");
 
-    function setPriceInWeiToken(address nftAddr, uint256 nftId, uint256 priceInWeiToken) external onlyOwner {
-        require(priceInWeiToken > 0, "input invalid");
-        prices[nftAddr][nftId].priceInWeiToken = priceInWeiToken;
+        for (uint256 i = minNftId; i <= maxNftId; i++) {
+            uint256 price = priceArray[i - minNftId];
+            require(price > 0, "input invalid");
+            //console.log("id = %s,: %s", i, );
+            if (isETH) {
+                prices[nftAddr][i].priceInWeiEth = price;
+            } else {
+                prices[nftAddr][i].priceInWeiToken = price;
+            }
+        }
     }
 
     function buyNFTviaETH(address nftAddr, uint256 nftId) external payable {
@@ -86,19 +94,19 @@ contract ERC721Sales is Ownable, ERC721Holder, ReentrancyGuard {
         emit BuyNFTViaERC20(msg.sender, nftId, priceInWeiToken, address(this).balance);
     }
 
-    function withdrawNFT(address nftAddr, address _to, uint256 minTokenId, uint256 maxTokenId) external onlyOwner {
+    function withdrawNFT(address nftAddr, address _to, uint256 minNftId, uint256 maxNftId) external onlyOwner {
         require(_to != address(0) && _to != address(this), "to address invalid");
         require(msg.sender != address(this), "sender invalid");
 
         IERC721Full erc721 = IERC721Full(nftAddr);
 
-        for (uint256 tokenId = minTokenId; tokenId <= maxTokenId; tokenId++) {
+        for (uint256 tokenId = minNftId; tokenId <= maxNftId; tokenId++) {
             address owner = erc721.ownerOf(tokenId);
             if (erc721.exists(tokenId) && owner == address(this)) {
                 erc721.safeTransferFrom(address(this), _to, tokenId, "");
             }
         }
-        emit WithdrawNFT(_to, minTokenId, maxTokenId);
+        emit WithdrawNFT(_to, minNftId, maxNftId);
     }
 
     function sellNFTviaETH(address nftAddr, uint256 nftId) external nonReentrant {
@@ -156,7 +164,7 @@ contract ERC721Sales is Ownable, ERC721Holder, ReentrancyGuard {
     event WithdrawERC20(address indexed payee, uint256 amount, uint256 balance);
     event BuyNFTViaETH(address indexed payer, uint256 indexed tokenId, uint256 amount, uint256 balance);
     event SellNFTViaETH(address payable indexed seller, uint256 indexed tokenId, uint256 amount, uint256 balance);
-    event WithdrawNFT(address indexed to, uint256 indexed minTokenId, uint256 maxTokenId);
+    event WithdrawNFT(address indexed to, uint256 indexed minNftId, uint256 maxNftId);
     event BuyNFTViaERC20(address indexed payer, uint256 indexed tokenId, uint256 amount, uint256 balance);
     event SellNFTViaERC20(address indexed seller, uint256 indexed tokenId, uint256 amount, uint256 balance);
 
