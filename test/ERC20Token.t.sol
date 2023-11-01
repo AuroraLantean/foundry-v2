@@ -11,31 +11,45 @@ contract ERC20TokenTest is Test {
     address public erc20receiverAddr;
     address public ctrtOwner;
     address public tokenOwner;
-    address public alice = address(1);
+    address public tis = address(this);
     address public bob = address(2);
     address public charlie = address(3);
     uint256 public balc;
     uint256 public tokenAmount;
     bytes4 public b4;
 
+    receive() external payable {
+        console.log("ETH received from:", msg.sender);
+        console.log("ETH received in Szabo:", msg.value / 1e12);
+    }
+
+    event TokenReceived(address indexed from, uint256 indexed amount, bytes data);
+
+    bytes4 private constant _ERC20_RECEIVED = 0x8943ec02;
+    // Equals to `bytes4(keccak256(abi.encodePacked("tokenReceived(address,uint256,bytes)")))`
+    // OR IERC20Receiver.tokenReceived.selector
+
+    function tokenReceived(address from, uint256 amount, bytes calldata data) external returns (bytes4) {
+        //console.log("tokenReceived");
+        emit TokenReceived(from, amount, data);
+        return _ERC20_RECEIVED;
+    }
+
     function setUp() public {
-        vm.startPrank(alice);
         erc20 = new ERC20Token("Dragons", "DRG");
         erc20Addr = address(erc20);
         console.log("erc20Addr:", erc20Addr);
         ctrtOwner = erc20.owner();
-        assertEq(ctrtOwner, alice);
+        assertEq(ctrtOwner, tis);
 
         erc20receiver = new ERC20Receiver();
         erc20receiverAddr = address(erc20receiver);
         console.log("erc20receiverAddr:", erc20receiverAddr);
         console.log("setup successful");
-        vm.stopPrank();
     }
 
     function test1() public {
         tokenAmount = 1000;
-        vm.startPrank(alice);
         erc20.transfer(bob, tokenAmount);
         balc = erc20.balanceOf(bob);
         console.log("Bob balc:", balc);
@@ -64,16 +78,13 @@ contract ERC20TokenTest is Test {
         balc = erc20.balanceOf(charlie);
         console.log("charlie balc:", balc);
         assertEq(balc, tokenAmount * 2);
-
-        vm.stopPrank();
     }
     /*
     function testSafeTransferFromEOA() public {
-        vm.prank(alice);
         erc20.safeMint(bob);
-        vm.startPrank(bob);
+        vm.prank(bob);
         erc20.safeTransferFrom(bob, charlie);
-        tokenOwner = erc20.ownerOf(nftIdMin);
+        tokenOwner = erc20.balanceOf(amount);
         assertEq(tokenOwner, charlie);
         balc = erc20.balanceOf(charlie);
         assertEq(balc, 1);
@@ -81,9 +92,8 @@ contract ERC20TokenTest is Test {
 
     function testSafeTransferFromReceiver() public {
         nftId = 0;
-        vm.startPrank(alice);
-        erc20.safeTransferFrom(alice, erc20receiverAddr, nftId);
-        tokenOwner = erc20.ownerOf(nftId);
+        erc20.safeTransferFrom(tis, erc20receiverAddr, nftId);
+        tokenOwner = erc20.balanceOf(nftId);
         console.log("tokenOwner:", tokenOwner);
         assertEq(tokenOwner, erc20receiverAddr);
 
@@ -93,7 +103,7 @@ contract ERC20TokenTest is Test {
         console.logBytes4(b4);
 
         erc20receiver.safeTransferFrom(erc20Addr, erc20receiverAddr, charlie, nftId);
-        tokenOwner = erc20.ownerOf(nftId);
+        tokenOwner = erc20.balanceOf(nftId);
         console.log("tokenOwner:", tokenOwner);
         assertEq(tokenOwner, charlie);
         balc = erc20.balanceOf(charlie);
@@ -102,19 +112,17 @@ contract ERC20TokenTest is Test {
     }
 
     function testFail() public {
-        vm.prank(alice);
         erc20.safeMint(bob);
         vm.prank(charlie);
-        erc20.burn(nftIdMin);
+        erc20.burn(amount);
     }
 
     function testOnlyOwnerBurn() public {
-        vm.prank(alice);
         erc20.safeMint(bob);
 
         vm.prank(charlie);
         vm.expectRevert("ERC20: caller is not token owner or approved");
-        erc20.burn(nftIdMin);
+        erc20.burn(amount);
         emit log_address(charlie);
         emit log_address(bob);
     }

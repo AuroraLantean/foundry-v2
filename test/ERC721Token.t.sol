@@ -3,15 +3,16 @@ pragma solidity ^0.8.20;
 
 import "forge-std/Test.sol";
 import "src/ERC721Token.sol";
+import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol"; //includes IERC721Receiver
 
-contract ERC721TokenTest is Test {
+contract ERC721TokenTest is Test, ERC721Holder {
     ERC721Token public erc721;
     ERC721Receiver public erc721receiver;
     address public erc721Addr;
     address public erc721receiverAddr;
     address public ctrtOwner;
     address public nftOwner;
-    address public alice = address(1);
+    address public tis = address(this);
     address public bob = address(2);
     address public charlie = address(3);
     uint256 public nftBalc;
@@ -22,16 +23,22 @@ contract ERC721TokenTest is Test {
     uint256 public minTokenId = 0;
     uint256 public maxTokenId = 9;
 
+    receive() external payable {
+        console.log("ETH received from:", msg.sender);
+        console.log("ETH received in Szabo:", msg.value / 1e12);
+    }
+
     function setUp() public {
-        vm.prank(alice);
+        console.log("---------== Setup()");
+        console.log("minTokenId: %s, maxTokenId: %s", minTokenId, maxTokenId);
         erc721 = new ERC721Token("Dragons", "DRG", minTokenId, maxTokenId);
         erc721Addr = address(erc721);
         console.log("erc721Addr:", erc721Addr);
         ctrtOwner = erc721.owner();
-        assertEq(ctrtOwner, alice);
-        //console.log("ctrtOwner:", ctrtOwner);
+        console.log("ctrtOwner:", ctrtOwner);
+        console.log("tis:", tis);
+        assertEq(ctrtOwner, tis);
 
-        vm.prank(alice);
         erc721receiver = new ERC721Receiver();
         erc721receiverAddr = address(erc721receiver);
         console.log("erc721receiverAddr:", erc721receiverAddr);
@@ -39,7 +46,6 @@ contract ERC721TokenTest is Test {
     }
 
     function testSafeMint() public {
-        vm.prank(alice);
         erc721.safeMint(bob, nftIdMin);
         nftOwner = erc721.ownerOf(nftIdMin);
         assertEq(nftOwner, bob);
@@ -48,7 +54,6 @@ contract ERC721TokenTest is Test {
     }
 
     function testSafeTransferFromEOA() public {
-        vm.prank(alice);
         erc721.safeMint(bob, nftIdMin);
         vm.startPrank(bob);
         erc721.safeTransferFrom(bob, charlie, nftIdMin);
@@ -60,8 +65,7 @@ contract ERC721TokenTest is Test {
 
     function testSafeTransferFromReceiver() public {
         nftId = 0;
-        vm.startPrank(alice);
-        erc721.safeTransferFrom(alice, erc721receiverAddr, nftId);
+        erc721.safeTransferFrom(tis, erc721receiverAddr, nftId);
         nftOwner = erc721.ownerOf(nftId);
         console.log("nftOwner:", nftOwner);
         assertEq(nftOwner, erc721receiverAddr);
@@ -81,7 +85,6 @@ contract ERC721TokenTest is Test {
     }
 
     function testSafeMintBatch() public {
-        vm.prank(alice);
         erc721.safeMintBatch(bob, nftIdMin, nftIdMax);
         nftBalc = erc721.balanceOf(bob);
         console.log("nftBalc:", nftBalc);
@@ -89,7 +92,6 @@ contract ERC721TokenTest is Test {
     }
 
     function testSafeTransferFromBatch() public {
-        vm.prank(alice);
         erc721.safeMintBatch(bob, nftIdMin, nftIdMax);
         nftBalc = erc721.balanceOf(charlie);
         assertEq(nftBalc, 0);
@@ -100,20 +102,37 @@ contract ERC721TokenTest is Test {
     }
 
     function testFail() public {
-        vm.prank(alice);
         erc721.safeMint(bob, nftIdMin);
         vm.prank(charlie);
         erc721.burn(nftIdMin);
     }
 
     function testOnlyOwnerBurn() public {
-        vm.prank(alice);
         erc721.safeMint(bob, nftIdMin);
-
+        //The caller must own `tokenId` or be an approved operator.
+        //error ERC721InsufficientApproval(address operator,uint256 tokenId)
         vm.prank(charlie);
-        vm.expectRevert("ERC721: caller is not token owner or approved");
+        bytes4 selector = bytes4(keccak256("ERC721InsufficientApproval(address,uint256)")); //keep parameter types, but remove parameter name and any space in between quotes!!!
+        vm.expectRevert(abi.encodeWithSelector(selector, charlie, nftIdMin));
         erc721.burn(nftIdMin);
         emit log_address(charlie);
         emit log_address(bob);
+    }
+
+    function testSetTokenURI() public {
+        string memory tokenURI = erc721.tokenURI(minTokenId);
+        console.log("tokenURI: ", tokenURI);
+
+        string memory baseTokenURI = "https://abc.com/";
+        erc721.setBaseURI(baseTokenURI);
+        string memory baseURI = erc721.baseURI();
+        console.log("baseURI: ", baseURI);
+
+        tokenURI = erc721.tokenURI(minTokenId);
+        console.log("tokenURI: ", tokenURI);
+        tokenURI = erc721.tokenURI(minTokenId + 1);
+        console.log("tokenURI: ", tokenURI);
+        tokenURI = erc721.tokenURI(maxTokenId);
+        console.log("tokenURI: ", tokenURI);
     }
 }
