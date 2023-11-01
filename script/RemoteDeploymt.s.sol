@@ -75,9 +75,9 @@ contract RemoteDeploymtScript is Script {
             console.log("TOKEN_ADDR:", tokenAddr);
             address dragonsAddr = vm.envAddress("NFT_ADDR");
             console.log("NFT_ADDR:", dragonsAddr);
-            uint256 priceInWeiEth = 1e15;
-            uint256 priceInWeiToken = 100e6;
-            ERC721Sales sales = new ERC721Sales(tokenAddr, dragonsAddr, priceInWeiEth, priceInWeiToken);
+            //uint256 priceInWeiEth = 1e15;
+            //uint256 priceInWeiToken = 100e6;
+            ERC721Sales sales = new ERC721Sales(tokenAddr);
             address salesAddr = address(sales);
             console.log("Sales addr:", salesAddr);
 

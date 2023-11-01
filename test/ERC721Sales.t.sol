@@ -19,6 +19,7 @@ contract ERC721SalesTest is Test, ERC721Holder {
     ERC20Token public token0;
     ArrayOfStructs public ctrt;
     address public owner;
+    address public nftAddr;
     address public salesAddr;
     address public tokenAddr;
     uint256 public aGenBf;
@@ -54,12 +55,13 @@ contract ERC721SalesTest is Test, ERC721Holder {
         //USDT, USDC use 6 dp !!! But DAI has 18!!
         usdt = new ERC20DP6("TetherUSD", "USDT");
         dragons = new ERC721Token("DragonsNFT", "DRAG", minTokenId, maxTokenId);
+        nftAddr = address(dragons);
         usdt.mint(alice, 1000e6);
         aGenBf = usdt.balanceOf(alice);
         console.log("Alice USDT:", aGenBf / 1e6, aGenBf);
         assertEq(aGenBf, 1000e6);
         tokenAddr = address(usdt);
-        sales = new ERC721Sales(tokenAddr, address(dragons), priceInWeiEth, priceInWeiToken);
+        sales = new ERC721Sales(tokenAddr);
         salesAddr = address(sales);
 
         aNftBf = dragons.balanceOf(tis);
@@ -92,7 +94,7 @@ contract ERC721SalesTest is Test, ERC721Holder {
     }
 
     function testInit() external {
-        console.log("----== testInit");
+        console.log("--------== testInit");
         console.log("safeApproveBatch...");
         dragons.safeApproveBatch(salesAddr, 0, 9);
 
@@ -104,16 +106,17 @@ contract ERC721SalesTest is Test, ERC721Holder {
 
         console.log("--------== buyNFTviaERC20");
         (aGenBf, aNftBf, cGenBf, cNftBf) = _balc(alice, "Alice", tokenAddr, "SalesCtrt");
+        sales.setPriceInWeiToken(nftAddr, 0, priceInWeiToken);
         vm.startPrank(alice);
         usdt.approve(salesAddr, priceInWeiToken);
-        sales.buyNFTviaERC20(0);
+        sales.buyNFTviaERC20(nftAddr, 0);
         vm.stopPrank();
         (aGenAf, aNftAf, cGenAf, cNftAf) = _balc(alice, "Alice", tokenAddr, "SalesCtrt");
         assertEq(aGenBf - aGenAf, priceInWeiToken);
         assertEq(aNftAf - aNftBf, 1);
         assertEq(cGenAf - cGenBf, priceInWeiToken);
 
-        uint256[] memory out = sales.getBalances(tokenAddr, address(dragons));
+        uint256[] memory out = sales.getBalances(tokenAddr, nftAddr);
         console.log("out:", out[0], out[1], out[2]);
 
         console.log("--------== withdrawERC20");
@@ -124,8 +127,9 @@ contract ERC721SalesTest is Test, ERC721Holder {
 
         console.log("--------== BuyNFTviaETH");
         (aGenBf, aNftBf, cGenBf, cNftBf) = _balc(alice, "Alice", zero, "SalesCtrt");
+        sales.setPriceInWeiETH(nftAddr, 1, priceInWeiEth);
         vm.startPrank(alice);
-        sales.buyNFTviaETH{value: priceInWeiEth}(1);
+        sales.buyNFTviaETH{value: priceInWeiEth}(nftAddr, 1);
         vm.stopPrank();
         (aGenAf, aNftAf, cGenAf, cNftAf) = _balc(alice, "Alice", zero, "SalesCtrt");
         assertEq(aGenBf - aGenAf, priceInWeiEth);
@@ -152,7 +156,7 @@ contract ERC721SalesTest is Test, ERC721Holder {
         console.log("aNftBf tis:", aNftBf);
         assertEq(aNftBf, 0);
 
-        sales.withdrawNFT(tis, 0, 9);
+        sales.withdrawNFT(nftAddr, tis, 0, 9);
         aNftBf = dragons.balanceOf(salesAddr);
         console.log("aNftBf salesAddr:", aNftBf);
         assertEq(aNftBf, 0);
@@ -173,7 +177,7 @@ contract ERC721SalesTest is Test, ERC721Holder {
         console.log("SalesCtrt ETH: %s", salesAddr.balance / 1e18, salesAddr.balance);
 
         dragons.approve(salesAddr, 0);
-        sales.sellNFTviaETH(0);
+        sales.sellNFTviaETH(nftAddr, 0);
         console.log("tis ETH: %s", tis.balance / 1e18);
         console.log("SalesCtrt ETH: %s", salesAddr.balance / 1e18, salesAddr.balance);
 
@@ -200,9 +204,9 @@ contract ERC721SalesTest is Test, ERC721Holder {
 
         dragons.approve(salesAddr, 0);
         console.log("after approve()");
-        uint256 nftPriceUSDT = sales.priceInWeiToken();
+        (uint256 nftPriceUSDT,) = sales.prices(nftAddr, 0);
         console.log("nftPriceToken:", nftPriceUSDT / 1e6);
-        sales.sellNFTviaERC20(0);
+        sales.sellNFTviaERC20(nftAddr, 0);
 
         aGenBf = usdt.balanceOf(tis);
         console.log("tis USDT: %s", aGenBf / 1e6);
@@ -240,7 +244,7 @@ contract ERC721SalesTest is Test, ERC721Holder {
         console.log(boxes[0].num, boxes[1].num, boxes[2].num, boxes[3].num);
 
         uint256[] memory uints;
-        uints = ctrt.getBalances(tokenAddr, address(dragons));
+        uints = ctrt.getBalances(tokenAddr, nftAddr);
         console.log("getBalances:");
         console.log(uints[0], uints[1], uints[2], uints[3]);
         console.log(uints[4], uints[5], uints[6]);

@@ -22,7 +22,7 @@
     "test": "forge test -vv",
     "erc20": "forge test -vvv --match-path test/ERC20Token.t.sol",
     "erc721": "forge test -vvv --match-path test/ERC721Token.t.sol",
-    "erc721sales": "forge test -vvv --match-path test/ERC721Sales.t.sol",
+    "erc721sales": "forge test -vv --match-path test/ERC721Sales.t.sol",
     "erc1155": "forge test -vvv --match-path test/ERC1155.t.sol",
     "counter": "forge test --match-path test/Counter.t.sol -vv",
     "error": "forge test --match-path test/Error.t.sol -vvv",

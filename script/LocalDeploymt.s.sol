@@ -101,7 +101,7 @@ contract AnvilDeploymtScript is Script {
             //uint256 tokenDp = 1e6;
             //uint256 priceInWeiToken = 100 * 1e6;
 
-            ERC721Sales sales = new ERC721Sales(usdtAddr, dragonsAddr, 1e15, 100 * 1e6);
+            ERC721Sales sales = new ERC721Sales(usdtAddr);
             address salesAddr = address(sales);
             console.log("Sales addr:", salesAddr);
 
