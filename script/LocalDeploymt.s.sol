@@ -93,6 +93,10 @@ contract AnvilDeploymtScript is Script {
             zGenBf = dragons.balanceOf(deployer);
             console.log("deployer NFT balc:", zGenBf);
 
+            dragons.setBaseURI("https://abc.com/");
+            console.log("baseURI: ", dragons.baseURI());
+            console.log("token0 URI: ", dragons.tokenURI(minTokenId));
+
             //uint256 priceInWeiEth = 1e15;
             //uint256 tokenDp = 1e6;
             //uint256 priceInWeiToken = 100 * 1e6;
