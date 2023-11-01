@@ -181,6 +181,12 @@ contract ERC721SalesTest is Test, ERC721Holder {
         deal(salesAddr, 1000 ether);
         console.log("SalesCtrt ETH: %s", salesAddr.balance / 1e18, salesAddr.balance);
 
+        uints.push(1e15);
+        sales.setPriceBatch(nftAddr, 0, 0, true, uints);
+        uints.pop();
+        (uint256 nftPriceEth,) = sales.prices(nftAddr, 0);
+        console.log("nftPriceEth in 1e15:", nftPriceEth / 1e15);
+
         dragons.approve(salesAddr, 0);
         sales.sellNFTviaETH(nftAddr, 0);
         console.log("tis ETH: %s", tis.balance / 1e18);
@@ -209,8 +215,12 @@ contract ERC721SalesTest is Test, ERC721Holder {
 
         dragons.approve(salesAddr, 0);
         console.log("after approve()");
-        (uint256 nftPriceUSDT,) = sales.prices(nftAddr, 0);
-        console.log("nftPriceToken:", nftPriceUSDT / 1e6);
+
+        uints.push(100e6);
+        sales.setPriceBatch(nftAddr, 0, 0, false, uints);
+        uints.pop();
+        (, uint256 nftPriceUSDT) = sales.prices(nftAddr, 0);
+        console.log("nftPriceUSDT:", nftPriceUSDT / 1e6);
         sales.sellNFTviaERC20(nftAddr, 0);
 
         aGenBf = usdt.balanceOf(tis);

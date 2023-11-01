@@ -117,9 +117,10 @@ contract ERC721Sales is Ownable, ERC721Holder, ReentrancyGuard {
 
         erc721.safeTransferFrom(msg.sender, address(this), nftId);
 
-        uint256 value = prices[nftAddr][nftId].priceInWeiEth.mulDiv(9, 10);
-        Address.sendValue(payable(msg.sender), value); // also check this ctrt ETH balance >= amount
-        emit SellNFTViaETH(payable(msg.sender), nftId, value, address(this).balance);
+        uint256 priceInWeiEth = prices[nftAddr][nftId].priceInWeiEth.mulDiv(9, 10);
+        require(priceInWeiEth > 0, "invalid price");
+        Address.sendValue(payable(msg.sender), priceInWeiEth); // also check this ctrt ETH balance >= amount
+        emit SellNFTViaETH(payable(msg.sender), nftId, priceInWeiEth, address(this).balance);
     }
 
     function sellNFTviaERC20(address nftAddr, uint256 nftId) external {
@@ -131,6 +132,7 @@ contract ERC721Sales is Ownable, ERC721Holder, ReentrancyGuard {
         erc721.safeTransferFrom(msg.sender, address(this), nftId);
 
         uint256 priceInWeiToken = prices[nftAddr][nftId].priceInWeiToken;
+        require(priceInWeiToken > 0, "invalid price");
         uint256 amount = priceInWeiToken.mulDiv(9, 10);
         token.safeTransfer(msg.sender, amount);
 
