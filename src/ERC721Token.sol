@@ -18,22 +18,20 @@ contract ERC721Token is Ownable, ERC721Burnable, ERC721Enumerable, ERC721URIStor
         Ownable(msg.sender)
         ERC721(name, symbol)
     {
-        safeMintBatch(msg.sender, minTokenId, maxTokenId);
+        _safeMintBatch(msg.sender, minTokenId, maxTokenId);
     }
 
-    function safeMintToGuest(address to, uint256 tokenId) public {
-        _safeMint(to, tokenId);
+    function safeMintToGuest(address to, uint256 minTokenId) public {
+        _safeMintBatch(to, minTokenId, minTokenId + 2);
     }
 
-    function safeMint(address to, uint256 tokenId) public onlyOwner {
-        _safeMint(to, tokenId);
+    function safeMint(address to, uint256 minTokenId, uint256 maxTokenId) public onlyOwner {
+        _safeMintBatch(to, minTokenId, maxTokenId);
     }
 
-    function safeMintBatch(address to, uint256 minTokenId, uint256 maxTokenId) public onlyOwner {
+    function _safeMintBatch(address to, uint256 minTokenId, uint256 maxTokenId) private {
         for (uint256 tokenId = minTokenId; tokenId <= maxTokenId; tokenId++) {
-            if (exists(tokenId)) {
-                continue;
-            }
+            //if (exists(tokenId)) { continue;}
             _safeMint(to, tokenId);
         }
     }

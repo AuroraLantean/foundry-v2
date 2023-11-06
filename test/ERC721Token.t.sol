@@ -46,7 +46,7 @@ contract ERC721TokenTest is Test, ERC721Holder {
     }
 
     function testSafeMint() public {
-        erc721.safeMint(bob, nftIdMin);
+        erc721.safeMint(bob, nftIdMin, nftIdMin);
         nftOwner = erc721.ownerOf(nftIdMin);
         assertEq(nftOwner, bob);
         nftBalc = erc721.balanceOf(bob);
@@ -59,11 +59,11 @@ contract ERC721TokenTest is Test, ERC721Holder {
         nftOwner = erc721.ownerOf(nftIdMin);
         assertEq(nftOwner, erc721receiverAddr);
         nftBalc = erc721.balanceOf(erc721receiverAddr);
-        assertEq(nftBalc, 1);
+        assertEq(nftBalc, 3);
     }
 
     function testSafeTransferFromEOA() public {
-        erc721.safeMint(bob, nftIdMin);
+        erc721.safeMint(bob, nftIdMin, nftIdMin);
         vm.startPrank(bob);
         erc721.safeTransferFrom(bob, charlie, nftIdMin);
         nftOwner = erc721.ownerOf(nftIdMin);
@@ -94,14 +94,20 @@ contract ERC721TokenTest is Test, ERC721Holder {
     }
 
     function testSafeMintBatch() public {
-        erc721.safeMintBatch(bob, nftIdMin, nftIdMax);
+        erc721.safeMint(bob, nftIdMin, nftIdMax);
         nftBalc = erc721.balanceOf(bob);
         console.log("nftBalc:", nftBalc);
         assertEq(nftBalc, nftIdMax - nftIdMin + 1);
+
+        // Mint The Same Id
+        bytes4 selector = bytes4(keccak256("ERC721InvalidSender(address)"));
+        vm.expectRevert(abi.encodeWithSelector(selector, address(0)));
+        erc721.safeMint(bob, nftIdMin, nftIdMin);
+        emit log_address(bob);
     }
 
     function testSafeTransferFromBatch() public {
-        erc721.safeMintBatch(bob, nftIdMin, nftIdMax);
+        erc721.safeMint(bob, nftIdMin, nftIdMax);
         nftBalc = erc721.balanceOf(charlie);
         assertEq(nftBalc, 0);
         vm.startPrank(bob);
@@ -111,23 +117,15 @@ contract ERC721TokenTest is Test, ERC721Holder {
     }
 
     function testFail() public {
-        erc721.safeMint(bob, nftIdMin);
+        erc721.safeMint(bob, nftIdMin, nftIdMin);
         console.log("to test failure1");
         vm.prank(charlie);
         erc721.burn(nftIdMin);
         console.log("failure1"); //not reached
     }
 
-    function testMintTheSameId() public {
-        erc721.safeMint(bob, nftIdMin);
-        bytes4 selector = bytes4(keccak256("ERC721InvalidSender(address)"));
-        vm.expectRevert(abi.encodeWithSelector(selector, address(0)));
-        erc721.safeMint(bob, nftIdMin);
-        emit log_address(bob);
-    }
-
     function testOnlyOwnerBurn() public {
-        erc721.safeMint(bob, nftIdMin);
+        erc721.safeMint(bob, nftIdMin, nftIdMin);
         //The caller must own `tokenId` or be an approved operator.
         //error ERC721InsufficientApproval(address operator,uint256 tokenId)
         vm.prank(charlie);

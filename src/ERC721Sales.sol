@@ -51,10 +51,32 @@ contract ERC721Sales is Ownable, ERC721Holder, ReentrancyGuard {
         token = IERC20Metadata(erc20Addr);
     }
 
+    function setPriceBatchGuest(address nftAddr, uint256 minNftId) external {
+        uint8 decimals = token.decimals();
+        uint256 dpbase = 10 ** (uint256(decimals));
+        uint256[] memory ids = new uint256[](1);
+        ids[0] = 1e15;
+        _setPriceBatch(nftAddr, minNftId, minNftId, true, ids);
+        ids[0] = 11 * dpbase;
+        _setPriceBatch(nftAddr, minNftId + 1, minNftId + 1, false, ids);
+        ids[0] = 12 * dpbase;
+        _setPriceBatch(nftAddr, minNftId + 2, minNftId + 2, false, ids);
+    }
+
     function setPriceBatch(address nftAddr, uint256 minNftId, uint256 maxNftId, bool isETH, uint256[] memory priceArray)
         external
         onlyOwner
     {
+        _setPriceBatch(nftAddr, minNftId, maxNftId, isETH, priceArray);
+    }
+
+    function _setPriceBatch(
+        address nftAddr,
+        uint256 minNftId,
+        uint256 maxNftId,
+        bool isETH,
+        uint256[] memory priceArray
+    ) private {
         require(maxNftId - minNftId + 1 == priceArray.length, "priceArray length invalid");
 
         for (uint256 i = minNftId; i <= maxNftId; i++) {

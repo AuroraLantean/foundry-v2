@@ -57,13 +57,16 @@ contract ERC721SalesTest is Test, ERC721Holder {
         usdt = new ERC20DP6("TetherUSD", "USDT");
         dragons = new ERC721Token("DragonsNFT", "DRAG", minNftId, maxNftId);
         nftAddr = address(dragons);
+        console.log("nftAddr", nftAddr);
         usdt.mint(alice, 1000e6);
         aGenBf = usdt.balanceOf(alice);
         console.log("Alice USDT:", aGenBf / 1e6, aGenBf);
         assertEq(aGenBf, 1000e6);
         tokenAddr = address(usdt);
+        console.log("tokenAddr", tokenAddr);
         sales = new ERC721Sales(tokenAddr);
         salesAddr = address(sales);
+        console.log("salesAddr", salesAddr);
 
         aNftBf = dragons.balanceOf(tis);
         console.log("aNftBf tis:", aNftBf);
@@ -245,6 +248,50 @@ contract ERC721SalesTest is Test, ERC721Holder {
             console.log(priceEth, priceTok);
             //1000000000000000 100000000
         }
+    }
+
+    function testzGuestMintSetPriceBuy() public {
+        console.log("----== testGuestMintSetPriceBuy");
+        minNftId = 100;
+        vm.startPrank(alice);
+        dragons.safeMintToGuest(salesAddr, minNftId);
+
+        aNftBf = dragons.balanceOf(salesAddr);
+        assertEq(aNftBf, 3);
+        owner = dragons.ownerOf(minNftId);
+        console.log("owner", owner);
+        assertEq(owner, salesAddr);
+
+        sales.setPriceBatchGuest(nftAddr, minNftId);
+        for (uint256 i = minNftId; i <= minNftId + 2; i++) {
+            (uint256 priceEth, uint256 priceTok) = sales.prices(nftAddr, i);
+            console.log(priceEth, priceTok);
+        }
+        console.log("-----== buyNFTviaETH");
+        console.log("ETH balc of Alice in 1e15: %s", alice.balance / 1e15);
+        console.log("ETH balc of SalesCtrt in 1e15: %s", salesAddr.balance / 1e15, salesAddr.balance);
+
+        sales.buyNFTviaETH{value: 1e15}(nftAddr, minNftId);
+        console.log("ETH balc of Alice in 1e15: %s", alice.balance / 1e15);
+        console.log("ETH balc of SalesCtrt in 1e15: %s", salesAddr.balance / 1e15, salesAddr.balance);
+        aNftBf = dragons.balanceOf(alice);
+        console.log("aNftBf alice:", aNftBf);
+
+        //usdt
+        console.log("-----== buyNFTviaERC20");
+        aGenBf = usdt.balanceOf(alice);
+        console.log("aGenBf alice:", aGenBf / 1e6, aGenBf);
+
+        usdt.approve(salesAddr, 100e6);
+        console.log("here020");
+        sales.buyNFTviaERC20(nftAddr, minNftId + 1);
+
+        aNftBf = dragons.balanceOf(alice);
+        console.log("aNftBf alice:", aNftBf);
+
+        aGenAf = usdt.balanceOf(alice);
+        console.log("aGenAf alice:", aGenAf / 1e6, aGenAf);
+        vm.stopPrank();
     }
 
     function testArrayOfStructs() public {
