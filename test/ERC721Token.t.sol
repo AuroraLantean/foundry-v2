@@ -53,6 +53,15 @@ contract ERC721TokenTest is Test, ERC721Holder {
         assertEq(nftBalc, 1);
     }
 
+    function testSafeMintToGuest() public {
+        vm.startPrank(bob);
+        erc721.safeMintToGuest(erc721receiverAddr, nftIdMin);
+        nftOwner = erc721.ownerOf(nftIdMin);
+        assertEq(nftOwner, erc721receiverAddr);
+        nftBalc = erc721.balanceOf(erc721receiverAddr);
+        assertEq(nftBalc, 1);
+    }
+
     function testSafeTransferFromEOA() public {
         erc721.safeMint(bob, nftIdMin);
         vm.startPrank(bob);
@@ -103,8 +112,18 @@ contract ERC721TokenTest is Test, ERC721Holder {
 
     function testFail() public {
         erc721.safeMint(bob, nftIdMin);
+        console.log("to test failure1");
         vm.prank(charlie);
         erc721.burn(nftIdMin);
+        console.log("failure1"); //not reached
+    }
+
+    function testMintTheSameId() public {
+        erc721.safeMint(bob, nftIdMin);
+        bytes4 selector = bytes4(keccak256("ERC721InvalidSender(address)"));
+        vm.expectRevert(abi.encodeWithSelector(selector, address(0)));
+        erc721.safeMint(bob, nftIdMin);
+        emit log_address(bob);
     }
 
     function testOnlyOwnerBurn() public {
@@ -113,7 +132,7 @@ contract ERC721TokenTest is Test, ERC721Holder {
         //error ERC721InsufficientApproval(address operator,uint256 tokenId)
         vm.prank(charlie);
         bytes4 selector = bytes4(keccak256("ERC721InsufficientApproval(address,uint256)")); //keep parameter types, but remove parameter name and any space in between quotes!!!
-        vm.expectRevert(abi.encodeWithSelector(selector, charlie, nftIdMin));
+        vm.expectRevert(abi.encodeWithSelector(selector, charlie, nftIdMin)); //selector and custom error arguments
         erc721.burn(nftIdMin);
         emit log_address(charlie);
         emit log_address(bob);

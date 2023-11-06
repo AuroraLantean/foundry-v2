@@ -14,17 +14,17 @@ import "forge-std/console.sol";
 
 contract ERC20Token is Ownable, ERC20, ERC20Burnable {
     constructor(string memory name, string memory symbol) Ownable(msg.sender) ERC20(name, symbol) {
-        mintToOwner(9000000000);
+        _mint(msg.sender, 9000000000 * 10 ** uint256(decimals()));
     }
 
-    function mintToOwner(uint256 amountInDp) public onlyOwner {
-        _mint(owner(), amountInDp * 10 ** uint256(decimals()));
+    function mintToGuest() public {
+        _mint(msg.sender, 100 * 10 ** uint256(decimals()));
     }
 
-    function mint(address user, uint256 amount) public returns (bool) {
+    function mint(address user, uint256 amount) public onlyOwner returns (bool) {
         _mint(user, amount);
         return true;
-    } //onlyOwner is only for production
+    }
 
     function getData(address target) public view returns (string memory, uint8, uint256) {
         return (symbol(), decimals(), balanceOf(target));

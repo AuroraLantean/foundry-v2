@@ -15,7 +15,8 @@ contract ERC20TokenTest is Test {
     address public bob = address(2);
     address public charlie = address(3);
     uint256 public balc;
-    uint256 public tokenAmount;
+    uint256 public tokenAmount = 1000;
+    uint256 public receivedAmount = 0;
     bytes4 public b4;
 
     receive() external payable {
@@ -48,13 +49,7 @@ contract ERC20TokenTest is Test {
         console.log("setup successful");
     }
 
-    function test1() public {
-        tokenAmount = 1000;
-        erc20.transfer(bob, tokenAmount);
-        balc = erc20.balanceOf(bob);
-        console.log("Bob balc:", balc);
-        assertEq(balc, tokenAmount);
-
+    function testTokenReceiver() public {
         tokenAmount = 1000;
         erc20.approve(erc20receiverAddr, tokenAmount * 2);
         erc20receiver.deposit(erc20Addr, tokenAmount);
@@ -79,52 +74,75 @@ contract ERC20TokenTest is Test {
         console.log("charlie balc:", balc);
         assertEq(balc, tokenAmount * 2);
     }
-    /*
-    function testSafeTransferFromEOA() public {
-        erc20.safeMint(bob);
+
+    function testTransferFromEOA() public {
+        erc20.mint(bob, tokenAmount);
         vm.prank(bob);
-        erc20.safeTransferFrom(bob, charlie);
-        tokenOwner = erc20.balanceOf(amount);
-        assertEq(tokenOwner, charlie);
-        balc = erc20.balanceOf(charlie);
-        assertEq(balc, 1);
+        erc20.transfer(charlie, tokenAmount);
+        receivedAmount = erc20.balanceOf(charlie);
+        assertEq(receivedAmount, tokenAmount);
     }
 
     function testSafeTransferFromReceiver() public {
-        nftId = 0;
-        erc20.safeTransferFrom(tis, erc20receiverAddr, nftId);
-        tokenOwner = erc20.balanceOf(nftId);
-        console.log("tokenOwner:", tokenOwner);
-        assertEq(tokenOwner, erc20receiverAddr);
+        erc20.transfer(erc20receiverAddr, tokenAmount);
+        receivedAmount = erc20.balanceOf(erc20receiverAddr);
+        console.log("receivedAmount:", receivedAmount);
+        assertEq(receivedAmount, tokenAmount);
 
         b4 = erc20receiver.makeBytes();
         console.logBytes4(b4);
         b4 = erc20receiver.makeBytes2();
         console.logBytes4(b4);
 
-        erc20receiver.safeTransferFrom(erc20Addr, erc20receiverAddr, charlie, nftId);
-        tokenOwner = erc20.balanceOf(nftId);
-        console.log("tokenOwner:", tokenOwner);
-        assertEq(tokenOwner, charlie);
-        balc = erc20.balanceOf(charlie);
-        console.log("balc:", balc);
-        assertEq(balc, 1);
+        erc20receiver.transfer(erc20Addr, charlie, tokenAmount);
+        receivedAmount = erc20.balanceOf(charlie);
+        console.log("receivedAmount:", receivedAmount);
+        assertEq(receivedAmount, tokenAmount);
     }
 
-    function testFail() public {
-        erc20.safeMint(bob);
-        vm.prank(charlie);
-        erc20.burn(amount);
-    }
+    // function testFail() public { }
 
-    function testOnlyOwnerBurn() public {
-        erc20.safeMint(bob);
+    function testBurn() public {
+        erc20.mint(bob, tokenAmount);
 
+        //only account with enough balance can burn
+        receivedAmount = erc20.balanceOf(charlie);
         vm.prank(charlie);
-        vm.expectRevert("ERC20: caller is not token owner or approved");
-        erc20.burn(amount);
+        bytes4 selector = bytes4(keccak256("ERC20InsufficientBalance(address,uint256,uint256)"));
+        vm.expectRevert(abi.encodeWithSelector(selector, charlie, receivedAmount, tokenAmount));
+        erc20.burn(tokenAmount);
         emit log_address(charlie);
         emit log_address(bob);
+
+        vm.prank(bob);
+        erc20.burn(tokenAmount);
+        receivedAmount = erc20.balanceOf(bob);
+        console.log("receivedAmount:", receivedAmount);
+        assertEq(receivedAmount, 0);
     }
-    */
+
+    function testMint() public {
+        tokenAmount = 1000;
+        uint8 decimals = erc20.decimals();
+        console.log("decimals:", decimals);
+
+        //Non owner should not mint
+        vm.prank(charlie);
+        bytes4 selector = bytes4(keccak256("OwnableUnauthorizedAccount(address)"));
+        vm.expectRevert(abi.encodeWithSelector(selector, charlie));
+        erc20.mint(bob, tokenAmount);
+
+        //Owner(this contract) can mint
+        erc20.mint(bob, tokenAmount);
+        receivedAmount = erc20.balanceOf(bob);
+        console.log("receivedAmount:", receivedAmount);
+        assertEq(receivedAmount, tokenAmount);
+
+        //guest can mint 100 tokens
+        vm.prank(charlie);
+        erc20.mintToGuest();
+        receivedAmount = erc20.balanceOf(charlie);
+        console.log("receivedAmount:", receivedAmount);
+        assertEq(receivedAmount, 100 * 10 ** decimals);
+    }
 }

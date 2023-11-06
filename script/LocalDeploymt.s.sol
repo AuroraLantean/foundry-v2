@@ -118,7 +118,7 @@ contract AnvilDeploymtScript is Script {
             console.log("is Owner == Deployer: %s", nftOwners[i] == deployer);
             }*/
             for (uint256 i = minNftId; i <= maxNftId; i++) {
-                pricesEth.push((1 + i) * 1e15);
+                pricesEth.push((10 + i) * 1e14);
                 pricesTok.push((100 + i) * 1e6);
             }
             sales.setPriceBatch(nftAddr, minNftId, maxNftId, true, pricesEth);
