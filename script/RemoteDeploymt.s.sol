@@ -46,45 +46,50 @@ contract RemoteDeploymtScript is Script {
         console.log("url:", url); */
 
         uint256 privateKey = vm.envUint("PRIVATE_KEY");
-        address alice = vm.rememberKey(vm.envUint("PRIVATE_KEY"));
+        address owner = vm.rememberKey(vm.envUint("PRIVATE_KEY"));
         vm.startBroadcast(privateKey);
         //vm.broadcast();
-        choice = 3;
-        console.log("choice:", choice);
+        console.log("choice:", choice, ", deployed from: %s", owner);
         uint256 minNftId = 0;
         uint256 maxNftId = 9;
+        choice = 4;
         if (choice == 0) {
             console.log("do nothing");
             //console2_log(p0, p1);
         } else if (choice == 1) {
             ERC20Token goldtoken = new ERC20Token("GoldCoin", "GOLC");
             console.log("GoldCoin addr:", address(goldtoken));
-            balcTokB4 = goldtoken.balanceOf(alice);
-            console.log("alice GoldCoin balc:", balcTokB4, balcTokB4 / 1e18);
+            balcTokB4 = goldtoken.balanceOf(owner);
+            console.log("owner GoldCoin balc:", balcTokB4, balcTokB4 / 1e18);
         } else if (choice == 2) {
             ERC721Token dragons = new ERC721Token("DragonsNFT", "DRAG", minNftId, maxNftId);
-            balcTokB4 = dragons.balanceOf(alice);
-            console.log("alice NFT balc:", balcTokB4);
+            balcTokB4 = dragons.balanceOf(owner);
+            console.log("owner NFT balc:", balcTokB4);
         } else if (choice == 3) {
             ERC20DP6 usdt = new ERC20DP6("TetherUSD", "USDT");
             console.log("USDT addr:", address(usdt));
-            balcTokB4 = usdt.balanceOf(alice);
-            console.log("alice USDT balc:", balcTokB4, balcTokB4 / 1e6);
+            balcTokB4 = usdt.balanceOf(owner);
+            console.log("owner USDT balc:", balcTokB4, balcTokB4 / 1e6);
         } else if (choice == 4) {
-            address tokenAddr = vm.envAddress("TOKEN_ADDR");
-            console.log("TOKEN_ADDR:", tokenAddr);
+            address erc20Addr = vm.envAddress("TOKEN_ADDR");
+            console.log("TOKEN_ADDR:", erc20Addr);
             address dragonsAddr = vm.envAddress("NFT_ADDR");
             console.log("NFT_ADDR:", dragonsAddr);
             //uint256 priceInWeiEth = 1e15;
             //uint256 priceInWeiToken = 100e6;
-            ERC721Sales sales = new ERC721Sales(tokenAddr);
+            ERC721Sales sales = new ERC721Sales(erc20Addr);
             address salesAddr = address(sales);
             console.log("Sales addr:", salesAddr);
 
             ERC721Token dragons = ERC721Token(dragonsAddr);
-            dragons.safeTransferFromBatch(alice, salesAddr, minNftId, maxNftId);
+            dragons.safeApproveBatch(salesAddr, minNftId, maxNftId);
             nftBalc = dragons.balanceOf(salesAddr);
             console.log("Sales nftBalc:", nftBalc);
+
+            //priceArray = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+            //ETH prices: 1000000000000000, 1100000000000000, 1200000000000000, 1300000000000000, 1400000000000000, 1500000000000000, 1600000000000000, 1700000000000000, 1800000000000000, 1900000000000000
+            //TokenDp6 prices: 10000000, 11000000, 12000000, 13000000, 14000000, 15000000, 16000000, 17000000, 18000000, 19000000
+            //sales.setPriceBatch(nftAddr, minNftId, maxNftId, isETH, priceArray);
         }
         vm.stopBroadcast();
     }
