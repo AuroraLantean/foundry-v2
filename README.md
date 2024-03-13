@@ -35,6 +35,9 @@ To clean then install: `make all`
 
 To build: `make build`
 https://book.getfoundry.sh/getting-started/installation
+
+## Run Tests
+
 To run test: `forge test --match-path test/Counter.t.sol -vv`
 
 ## Environment Variables

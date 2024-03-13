@@ -19,8 +19,9 @@ receive() exists?  fallback()
 import "forge-std/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract NFTSales {
-    IERC20 public immutable token;
+//a simplified version of ERC721Sales.sol
+contract ERC721Sales1 {
+    IERC20 public immutable erc20token;
 
     address payable public owner;
     uint256 public priceA;
@@ -36,10 +37,12 @@ contract NFTSales {
 
     event Deposit(address indexed from, uint256 amount, uint256 gasleft);
 
-    constructor(address _token) payable {
+    constructor(address erc20Addr) payable {
+        require(erc20Addr != address(0), "should not be zero");
+        require(erc20Addr.code.length != 0, "should be contracts");
         owner = payable(msg.sender);
         emit OwnershipTransferred(address(0), owner);
-        token = IERC20(_token);
+        erc20token = IERC20(erc20Addr);
     }
     // Function to receive Ether. msg.data must be empty
 
@@ -102,14 +105,18 @@ contract NFTSales {
         }
     }
 
-    function buyNFTwERC20(uint256 _tokenId) external {
-        //require(ierc721Full.exists(_tokenId));
+    function buyNFTwERC20(uint256 percentA, uint256 percentB, uint256 nftId) external {
+        require(percentA <= 100, "percentA invalid");
+        require(percentB <= 100, "percentB invalid");
+        require(percentB + percentA == 100, "should be 100 percent");
+        //percentA and percentB adds up to 100
+        require(msg.sender != address(0), "invalid sender");
+        require(msg.sender != address(this), "invalid sender");
 
-        //token.safeTransferFrom(msg.sender, address(this), getNFTPrice());
-        //require(msg.value >= priceInWeiETH);
+        //require(ierc721Full.exists(nftId));
 
-        //IERC721.safeTransferFrom(tokenSeller, msg.sender, _tokenId);
-        //emit BuyNFTViaERC20(msg.sender, _tokenId, priceInWeiToken, address(this).balance);
+        uint256 price = getNFTPrice(percentA, percentB);
+        erc20token.transferFrom(msg.sender, address(this), price);
     }
 
     function getEthBalance() public view returns (uint256) {

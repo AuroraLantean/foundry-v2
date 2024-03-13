@@ -17,6 +17,7 @@ install :;
 	forge install Uniswap/v3-periphery
 	forge install Uniswap/v3-core
 	forge install foundry-rs/forge-std
+	forge install @aave/aave-v3-core
 #forge install smartcontractkit/chainlink-brownie-contracts && forge install rari-capital/solmate 
 
 # Update Dependencies
